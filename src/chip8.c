@@ -5,50 +5,55 @@
 #include <time.h>
 #include <sys/stat.h>
 
-#include "cpu_def.h"
 #include "chip8.h"
+#include "cpu_def.h"
+#include "status_code.h"
 
-void op_table_0(uint16_t const opcode, cpu_state_t *state);
-void op_table_8(uint16_t const opcode, cpu_state_t *state);
-void op_table_E(uint16_t const opcode, cpu_state_t *state);
-void op_table_F(uint16_t const opcode, cpu_state_t *state);
+status_code_t fetch(cpu_state_t *const state, uint16_t *const opcode);
+status_code_t mem_read(cpu_state_t *const state, const uint16_t address, uint8_t *const dest, const size_t size);
+status_code_t mem_write(cpu_state_t *const state, const uint16_t address, uint8_t *const source, const size_t size);
 
-void op_00E0(uint16_t const opcode, cpu_state_t *state);
-void op_00EE(uint16_t const opcode, cpu_state_t *state);
-void op_1NNN(uint16_t const opcode, cpu_state_t *state);
-void op_2NNN(uint16_t const opcode, cpu_state_t *state);
-void op_3XNN(uint16_t const opcode, cpu_state_t *state);
-void op_4XNN(uint16_t const opcode, cpu_state_t *state);
-void op_5XY0(uint16_t const opcode, cpu_state_t *state);
-void op_6XNN(uint16_t const opcode, cpu_state_t *state);
-void op_7XNN(uint16_t const opcode, cpu_state_t *state);
-void op_8XY0(uint16_t const opcode, cpu_state_t *state);
-void op_8XY1(uint16_t const opcode, cpu_state_t *state);
-void op_8XY2(uint16_t const opcode, cpu_state_t *state);
-void op_8XY3(uint16_t const opcode, cpu_state_t *state);
-void op_8XY4(uint16_t const opcode, cpu_state_t *state);
-void op_8XY5(uint16_t const opcode, cpu_state_t *state);
-void op_8X06(uint16_t const opcode, cpu_state_t *state);
-void op_8XY7(uint16_t const opcode, cpu_state_t *state);
-void op_8X0E(uint16_t const opcode, cpu_state_t *state);
-void op_9XY0(uint16_t const opcode, cpu_state_t *state);
-void op_ANNN(uint16_t const opcode, cpu_state_t *state);
-void op_BNNN(uint16_t const opcode, cpu_state_t *state);
-void op_CXNN(uint16_t const opcode, cpu_state_t *state);
-void op_DXYN(uint16_t const opcode, cpu_state_t *state);
-void op_EX9E(uint16_t const opcode, cpu_state_t *state);
-void op_EXA1(uint16_t const opcode, cpu_state_t *state);
-void op_FX07(uint16_t const opcode, cpu_state_t *state);
-void op_FX0A(uint16_t const opcode, cpu_state_t *state);
-void op_FX15(uint16_t const opcode, cpu_state_t *state);
-void op_FX18(uint16_t const opcode, cpu_state_t *state);
-void op_FX1E(uint16_t const opcode, cpu_state_t *state);
-void op_FX29(uint16_t const opcode, cpu_state_t *state);
-void op_FX33(uint16_t const opcode, cpu_state_t *state);
-void op_FX55(uint16_t const opcode, cpu_state_t *state);
-void op_FX65(uint16_t const opcode, cpu_state_t *state);
+status_code_t op_table_0(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_table_8(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_table_E(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_table_F(uint16_t const opcode, cpu_state_t *const state);
 
-typedef void (*opcode_handler_fn)(uint16_t const opcode, cpu_state_t *state);
+status_code_t op_00E0(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_00EE(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_1NNN(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_2NNN(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_3XNN(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_4XNN(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_5XY0(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_6XNN(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_7XNN(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_8XY0(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_8XY1(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_8XY2(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_8XY3(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_8XY4(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_8XY5(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_8X06(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_8XY7(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_8X0E(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_9XY0(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_ANNN(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_BNNN(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_CXNN(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_DXYN(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_EX9E(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_EXA1(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_FX07(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_FX0A(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_FX15(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_FX18(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_FX1E(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_FX29(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_FX33(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_FX55(uint16_t const opcode, cpu_state_t *const state);
+status_code_t op_FX65(uint16_t const opcode, cpu_state_t *const state);
+
+typedef status_code_t (*opcode_handler_fn)(uint16_t const opcode, cpu_state_t *const state);
 
 uint8_t fontset[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -69,21 +74,28 @@ uint8_t fontset[80] = {
     0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
-void init_cpu(cpu_state_t *state)
+status_code_t init_cpu(cpu_state_t *const state)
 {
+  VERIFY_PTR_RETURN_ERROR_IF_NULL(state);
+
   srand((uint16_t)time(NULL));
   memset(state, 0, sizeof(cpu_state_t));
   memcpy(state->memory, fontset, sizeof(fontset));
   state->registers.pc = START_ADDRESS;
+
+  return STATUS_OK;
 }
 
-int32_t load_rom(cpu_state_t *state, const char *file)
+status_code_t load_rom(cpu_state_t *const state, const char *file)
 {
+  VERIFY_PTR_RETURN_ERROR_IF_NULL(state);
+  VERIFY_PTR_RETURN_ERROR_IF_NULL(file);
+
   FILE *fp = fopen(file, "rb");
 
   if (fp == NULL)
   {
-    return -1;
+    return STATUS_ERR_FILE_NOT_FOUND;
   }
 
   struct stat st;
@@ -96,12 +108,13 @@ int32_t load_rom(cpu_state_t *state, const char *file)
 
   if (bytes_read != fsize)
   {
-    return -1;
+    return STATUS_ERR_NO_MEMORY;
   }
-  return 0;
+
+  return STATUS_OK;
 }
 
-void emulation_cycle(cpu_state_t *state)
+status_code_t emulation_cycle(cpu_state_t *const state)
 {
   // Instruction table
   static opcode_handler_fn op_table[16] = {
@@ -110,14 +123,18 @@ void emulation_cycle(cpu_state_t *state)
       op_table_8, op_9XY0, op_ANNN, op_BNNN,
       op_CXNN, op_DXYN, op_table_E, op_table_F};
 
-  registers_t *reg = &state->registers;
+  VERIFY_PTR_RETURN_ERROR_IF_NULL(state);
+
+  uint16_t opcode;
+  status_code_t status;
 
   // Fetch
-  uint16_t opcode = state->memory[reg->pc] << 8 | state->memory[reg->pc + 1];
-  reg->pc += 2;
+  status = fetch(state, &opcode);
+  RETURN_STATUS_IF_NOT_OK(status);
 
   // Decode + Execute
-  op_table[((opcode >> 12) & 0xF)](opcode, state);
+  status = op_table[((opcode >> 12) & 0xF)](opcode, state);
+  RETURN_STATUS_IF_NOT_OK(status);
 
   // Decrement timers
   if (state->timers.delay > 0)
@@ -129,158 +146,236 @@ void emulation_cycle(cpu_state_t *state)
   {
     state->timers.sound--;
   }
+
+  return STATUS_OK;
 }
 
 /** Private */
-void op_table_0(uint16_t const opcode, cpu_state_t *state)
+status_code_t fetch(cpu_state_t *const state, uint16_t *const opcode)
 {
+  status_code_t status = STATUS_OK;
+  registers_t *reg = &state->registers;
+
+  /** Instructions are 2 bytes. PC must always be pointing to an even address */
+  if (reg->pc & 0x1)
+  {
+    return STATUS_ERR_INVALID_ADDRESS;
+  }
+
+  uint8_t bytes[2] = {0};
+  status = mem_read(state, reg->pc, bytes, 2);
+  RETURN_STATUS_IF_NOT_OK(status);
+
+  *opcode = (uint16_t)((bytes[0] << 8)) | bytes[1];
+  reg->pc += 2;
+
+  return STATUS_OK;
+}
+
+status_code_t mem_read(cpu_state_t *const state, const uint16_t address, uint8_t *const dest, const size_t size)
+{
+  if ((address + size - 1) >= MEM_SIZE)
+  {
+    return STATUS_ERR_MEM_OUT_OF_BOUNDS;
+  }
+
+  memcpy(dest, &(state->memory[address]), size);
+  return STATUS_OK;
+}
+
+status_code_t mem_write(cpu_state_t *const state, const uint16_t address, uint8_t *const source, const size_t size)
+{
+  if ((address + size - 1) >= MEM_SIZE)
+  {
+    return STATUS_ERR_MEM_OUT_OF_BOUNDS;
+  }
+
+  memcpy(&(state->memory[address]), source, size);
+  return STATUS_OK;
+}
+
+status_code_t op_table_0(uint16_t const opcode, cpu_state_t *const state)
+{
+  status_code_t status = STATUS_OK;
+
   switch (opcode & 0x00FF)
   {
   case 0xE0:
-    op_00E0(opcode, state);
+    status = op_00E0(opcode, state);
     break;
   case 0xEE:
-    op_00EE(opcode, state);
+    status = op_00EE(opcode, state);
     break;
   default:
     break;
   }
+
+  return status;
 }
 
-void op_table_8(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_table_8(uint16_t const opcode, cpu_state_t *const state)
 {
+  status_code_t status = STATUS_OK;
+
   switch (opcode & 0x000F)
   {
   case 0x0:
-    op_8XY0(opcode, state);
+    status = op_8XY0(opcode, state);
     break;
   case 0x1:
-    op_8XY1(opcode, state);
+    status = op_8XY1(opcode, state);
     break;
   case 0x2:
-    op_8XY2(opcode, state);
+    status = op_8XY2(opcode, state);
     break;
   case 0x3:
-    op_8XY3(opcode, state);
+    status = op_8XY3(opcode, state);
     break;
   case 0x4:
-    op_8XY4(opcode, state);
+    status = op_8XY4(opcode, state);
     break;
   case 0x5:
-    op_8XY5(opcode, state);
+    status = op_8XY5(opcode, state);
     break;
   case 0x6:
-    op_8X06(opcode, state);
+    status = op_8X06(opcode, state);
     break;
   case 0x7:
-    op_8XY7(opcode, state);
+    status = op_8XY7(opcode, state);
     break;
   case 0xE:
-    op_8X0E(opcode, state);
+    status = op_8X0E(opcode, state);
     break;
   default:
     break;
   }
+  return status;
 }
 
-void op_table_E(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_table_E(uint16_t const opcode, cpu_state_t *const state)
 {
+  status_code_t status = STATUS_OK;
+
   switch (opcode & 0xFF)
   {
   case 0x9E:
-    op_EX9E(opcode, state);
+    status = op_EX9E(opcode, state);
     break;
   case 0xA1:
-    op_EXA1(opcode, state);
+    status = op_EXA1(opcode, state);
     break;
   default:
     break;
   }
+  return status;
 }
 
-void op_table_F(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_table_F(uint16_t const opcode, cpu_state_t *const state)
 {
+  status_code_t status = STATUS_OK;
+
   switch (opcode & 0xFF)
   {
   case 0x07:
-    op_FX07(opcode, state);
+    status = op_FX07(opcode, state);
     break;
   case 0x0A:
-    op_FX0A(opcode, state);
+    status = op_FX0A(opcode, state);
     break;
   case 0x15:
-    op_FX15(opcode, state);
+    status = op_FX15(opcode, state);
     break;
   case 0x18:
-    op_FX18(opcode, state);
+    status = op_FX18(opcode, state);
     break;
   case 0x1E:
-    op_FX1E(opcode, state);
+    status = op_FX1E(opcode, state);
     break;
   case 0x29:
-    op_FX29(opcode, state);
+    status = op_FX29(opcode, state);
     break;
   case 0x33:
-    op_FX33(opcode, state);
+    status = op_FX33(opcode, state);
     break;
   case 0x55:
-    op_FX55(opcode, state);
+    status = op_FX55(opcode, state);
     break;
   case 0x65:
-    op_FX65(opcode, state);
+    status = op_FX65(opcode, state);
     break;
   default:
     break;
   }
+
+  return status;
 }
 
 /**
  * 0x00E0: CLS
  * Clears the screen
  */
-void op_00E0(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_00E0(uint16_t const opcode, cpu_state_t *const state)
 {
   memset(state->peripherals.graphics, 0, GRAPHICS_SIZE);
+  return STATUS_OK;
 }
 
 /**
  * 0x00EE: RET
  * Return from a subroutine call
  */
-void op_00EE(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_00EE(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
+
+  if (reg->sp == 0)
+  {
+    return STATUS_ERR_STACK_UNDERFLOW;
+  }
+
   reg->sp--;
   reg->pc = reg->stack[reg->sp];
+
+  return STATUS_OK;
 }
 
 /**
  * 0x1NNN: JMP NNN
  * Jump to address 0xNNN
  */
-void op_1NNN(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_1NNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
   reg->pc = opcode & 0x0FFF;
+
+  return STATUS_OK;
 }
 
 /**
  * 0x2NNN: JSR NNN
  * Jump to subroutine at address 0xNNN
  */
-void op_2NNN(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_2NNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
+
+  if (reg->sp >= STACK_SIZE)
+  {
+    return STATUS_ERR_STACK_OVERFLOW;
+  }
+
   reg->stack[reg->sp] = reg->pc;
   reg->sp++;
   reg->pc = opcode & 0x0FFF;
+
+  return STATUS_OK;
 }
 
 /**
  * 0x3XNN: SKEQ Vx, NN
  * Skip if V[X] == 0xNN
  */
-void op_3XNN(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_3XNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -290,13 +385,15 @@ void op_3XNN(uint16_t const opcode, cpu_state_t *state)
   {
     reg->pc += 2;
   }
+
+  return STATUS_OK;
 }
 
 /**
  * 0x4XNN: SKNE Vx, NN
  * Skip if V[X] != 0xNN
  */
-void op_4XNN(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_4XNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -306,13 +403,15 @@ void op_4XNN(uint16_t const opcode, cpu_state_t *state)
   {
     reg->pc += 2;
   }
+
+  return STATUS_OK;
 }
 
 /**
  * 0x5XY0: SKEQ Vx, Vy
  * Skip if V[X] == V[Y]
  */
-void op_5XY0(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_5XY0(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -323,19 +422,23 @@ void op_5XY0(uint16_t const opcode, cpu_state_t *state)
   {
     reg->pc += 2;
   }
+
+  return STATUS_OK;
 }
 
 /**
  * 0x6XNN: MOV Vx, NN
  * Sets the value of register V[X] to 0xNN
  */
-void op_6XNN(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_6XNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
   uint8_t x = (opcode & 0x0F00) >> 8;
 
   reg->V[x] = (opcode & 0x00FF);
+
+  return STATUS_OK;
 }
 
 /**
@@ -343,20 +446,22 @@ void op_6XNN(uint16_t const opcode, cpu_state_t *state)
  * Adds 0xNN to register V[X]
  * Note: Does not change the carry flag
  */
-void op_7XNN(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_7XNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
   uint8_t x = (opcode & 0x0F00) >> 8;
 
   reg->V[x] += (opcode & 0x00FF);
+
+  return STATUS_OK;
 }
 
 /**
  * 0x8XY0: MOV Vx, Vy
  * Sets V[X] to the value of V[Y]
  */
-void op_8XY0(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_8XY0(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -364,13 +469,15 @@ void op_8XY0(uint16_t const opcode, cpu_state_t *state)
   uint8_t y = (opcode & 0x00F0) >> 4;
 
   reg->V[x] = reg->V[y];
+
+  return STATUS_OK;
 }
 
 /**
  * 0x8XY1: OR Vx, Vy
  * Bitwise-OR the value in register V[Y] into V[X]
  */
-void op_8XY1(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_8XY1(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -378,13 +485,15 @@ void op_8XY1(uint16_t const opcode, cpu_state_t *state)
   uint8_t y = (opcode & 0x00F0) >> 4;
 
   reg->V[x] |= reg->V[y];
+
+  return STATUS_OK;
 }
 
 /**
  * 0x8XY2: AND Vx, Vy
  * Bitwise-AND the value in register V[Y] into V[X]
  */
-void op_8XY2(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_8XY2(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -392,13 +501,15 @@ void op_8XY2(uint16_t const opcode, cpu_state_t *state)
   uint8_t y = (opcode & 0x00F0) >> 4;
 
   reg->V[x] &= reg->V[y];
+
+  return STATUS_OK;
 }
 
 /**
  * 0x8XY3: XOR Vx, Vy
  * Bitwise-XOR the value in register V[Y] into V[X]
  */
-void op_8XY3(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_8XY3(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -406,6 +517,8 @@ void op_8XY3(uint16_t const opcode, cpu_state_t *state)
   uint8_t y = (opcode & 0x00F0) >> 4;
 
   reg->V[x] ^= reg->V[y];
+
+  return STATUS_OK;
 }
 
 /**
@@ -413,7 +526,7 @@ void op_8XY3(uint16_t const opcode, cpu_state_t *state)
  * Adds the value in register V[Y] into V[X]
  * Note: Carry is stored in V[F]
  */
-void op_8XY4(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_8XY4(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -426,6 +539,8 @@ void op_8XY4(uint16_t const opcode, cpu_state_t *state)
 
   reg->V[0xF] = (sum & 0xFF00) ? 1 : 0;
   reg->V[x] = (sum & 0x00FF);
+
+  return STATUS_OK;
 }
 
 /**
@@ -433,7 +548,7 @@ void op_8XY4(uint16_t const opcode, cpu_state_t *state)
  * Sets V[X] to V[X] minus V[Y].
  * Note: V[F] is set to 0 when there's an underflow, and 1 when there isn't.
  */
-void op_8XY5(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_8XY5(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -442,13 +557,15 @@ void op_8XY5(uint16_t const opcode, cpu_state_t *state)
 
   reg->V[0xF] = (reg->V[x] > reg->V[y]) ? 1 : 0;
   reg->V[x] -= reg->V[y];
+
+  return STATUS_OK;
 }
 
 /**
  * 0x8X06: SHR Vx
  * Shifts V[X] to the right by 1 and stores the LSB prior to the shift in V[F]
  */
-void op_8X06(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_8X06(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -456,6 +573,8 @@ void op_8X06(uint16_t const opcode, cpu_state_t *state)
 
   reg->V[0xF] = (reg->V[x] & 0x1);
   reg->V[x] >>= 1;
+
+  return STATUS_OK;
 }
 
 /**
@@ -463,7 +582,7 @@ void op_8X06(uint16_t const opcode, cpu_state_t *state)
  * Sets V[X] to V[Y] minus V[X].
  * Note: V[F] is set to 0 when there's an underflow, and 1 when there isn't
  */
-void op_8XY7(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_8XY7(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -472,13 +591,15 @@ void op_8XY7(uint16_t const opcode, cpu_state_t *state)
 
   reg->V[0xF] = (reg->V[y] > reg->V[x]) ? 1 : 0;
   reg->V[x] = reg->V[y] - reg->V[x];
+
+  return STATUS_OK;
 }
 
 /**
  * 0x8X0E: SHL Vx
  * Shifts V[X] to the left by 1 and stores the MSB prior to the shift in V[F]
  */
-void op_8X0E(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_8X0E(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -486,13 +607,15 @@ void op_8X0E(uint16_t const opcode, cpu_state_t *state)
 
   reg->V[0xF] = (reg->V[x] & 0x80) >> 7;
   reg->V[x] <<= 1;
+
+  return STATUS_OK;
 }
 
 /**
  * 0x9XY0: SKNE Vx, Vy
  * Skip if V[X] != V[Y]
  */
-void op_9XY0(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_9XY0(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -503,48 +626,56 @@ void op_9XY0(uint16_t const opcode, cpu_state_t *state)
   {
     reg->pc += 2;
   }
+
+  return STATUS_OK;
 }
 
 /**
  * 0xANNN: MVI NNN
  * Sets the index register to 0xNNN
  */
-void op_ANNN(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_ANNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
   reg->I = (opcode & 0xFFF);
+
+  return STATUS_OK;
 }
 
 /**
  * 0xBNNN: JMI NNN
  * Jump to the address 0xNNN + V0
  */
-void op_BNNN(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_BNNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
   reg->pc = reg->V[0] + (opcode & 0x0FFF);
+
+  return STATUS_OK;
 }
 
 /**
  * 0xCXNN: RAND Vx, NN
  * Sets V[X] to a random number bitwise-and'ed with 0xNN
  */
-void op_CXNN(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_CXNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
   uint8_t x = (opcode & 0x0F00) >> 8;
 
   reg->V[x] = (rand() & (opcode)) & 0x00FF;
+
+  return STATUS_OK;
 }
 
 /**
  * 0xDXYN: DISP X, Y, N
  * Draw a sprite on the display at (V[X], V[Y]) that has a height of N
  */
-void op_DXYN(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_DXYN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -576,13 +707,15 @@ void op_DXYN(uint16_t const opcode, cpu_state_t *state)
       }
     }
   }
+
+  return STATUS_OK;
 }
 
 /**
  * 0xEX9E: SKPR Vx
  * Skip if the key stored in V[X] is pressed
  */
-void op_EX9E(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_EX9E(uint16_t const opcode, cpu_state_t *const state)
 {
   uint8_t x = (opcode & 0x0F00) >> 8;
 
@@ -592,13 +725,15 @@ void op_EX9E(uint16_t const opcode, cpu_state_t *state)
   {
     reg->pc += 2;
   }
+
+  return STATUS_OK;
 }
 
 /**
  * 0xEXA1: SKNP Vx
  * Skip if the key stored in V[X] is not pressed
  */
-void op_EXA1(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_EXA1(uint16_t const opcode, cpu_state_t *const state)
 {
   uint8_t x = (opcode & 0x0F00) >> 8;
 
@@ -608,26 +743,30 @@ void op_EXA1(uint16_t const opcode, cpu_state_t *state)
   {
     reg->pc += 2;
   }
+
+  return STATUS_OK;
 }
 
 /**
  * 0xFX07: GDLY Vx
  * Sets V[X] to the value of the delay timer
  */
-void op_FX07(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_FX07(uint16_t const opcode, cpu_state_t *const state)
 {
   uint8_t x = (opcode & 0x0F00) >> 8;
 
   registers_t *reg = &state->registers;
 
   reg->V[x] = state->timers.delay;
+
+  return STATUS_OK;
 }
 
 /**
  * 0xFX0A: KEY Vx
  * Wait for key press and stores the value in V[X]
  */
-void op_FX0A(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_FX0A(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -647,58 +786,68 @@ void op_FX0A(uint16_t const opcode, cpu_state_t *state)
   {
     reg->pc -= 2;
   }
+
+  return STATUS_OK;
 }
 
 /**
  * 0xFX15: SDLY Vx
  * Set the delay timer to the value stored in V[X]
  */
-void op_FX15(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_FX15(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
   uint8_t x = (opcode & 0x0F00) >> 8;
 
   state->timers.delay = reg->V[x];
+
+  return STATUS_OK;
 }
 
 /**
  * 0xFX18: SSND Vx
  * Set the sound timer to the value stored in V[X]
  */
-void op_FX18(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_FX18(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
   uint8_t x = (opcode & 0x0F00) >> 8;
 
   state->timers.sound = reg->V[x];
+
+  return STATUS_OK;
 }
 
 /**
  * 0xFX1E: ADI Vx
  * Add register V[X] to the index register
  */
-void op_FX1E(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_FX1E(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
   uint8_t x = (opcode & 0x0F00) >> 8;
 
   reg->I += reg->V[x];
+
+  return STATUS_OK;
 }
 
 /**
  * 0xFX29: FONT Vx
  * Sets I to the location of the sprite for the character in V[X]
  */
-void op_FX29(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_FX29(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
   uint8_t x = (opcode & 0x0F00) >> 8;
 
   reg->I = reg->V[x] * 5;
+
+  return STATUS_OK;
 }
 
 /**
@@ -709,20 +858,23 @@ void op_FX29(uint16_t const opcode, cpu_state_t *state)
  * and the ones digit at location I+2.
  * Note: This doesn't change I
  */
-void op_FX33(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_FX33(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
   uint8_t x = (opcode & 0x0F00) >> 8;
   uint8_t value = reg->V[x];
+  uint8_t bcd[3] = {0};
 
-  state->memory[reg->I + 2] = value % 10;
+  bcd[2] = value % 10;
   value /= 10;
 
-  state->memory[reg->I + 1] = value % 10;
+  bcd[1] = value % 10;
   value /= 10;
 
-  state->memory[reg->I] = value % 10;
+  bcd[0] = value % 10;
+
+  return mem_write(state, reg->I, bcd, 3);
 }
 
 /**
@@ -730,16 +882,13 @@ void op_FX33(uint16_t const opcode, cpu_state_t *state)
  * Stores the values in V[0] to V[X] (including V[X]) in memory, starting at address I.
  * Note: This doesn't change I
  */
-void op_FX55(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_FX55(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  size_t size = ((opcode & 0x0F00) >> 8) + 1;
 
-  for (uint8_t offset = 0; offset <= x; offset++)
-  {
-    state->memory[reg->I + offset] = reg->V[offset];
-  }
+  return mem_write(state, reg->I, reg->V, size);
 }
 
 /**
@@ -747,14 +896,11 @@ void op_FX55(uint16_t const opcode, cpu_state_t *state)
  * Fills from V[0] to V[X] (including V[X]) with values from memory, starting at address I.
  * Note: This doesn't change I
  */
-void op_FX65(uint16_t const opcode, cpu_state_t *state)
+status_code_t op_FX65(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  size_t size = ((opcode & 0x0F00) >> 8) + 1;
 
-  for (uint8_t offset = 0; offset <= x; offset++)
-  {
-    reg->V[offset] = state->memory[reg->I + offset];
-  }
+  return mem_read(state, reg->I, reg->V, size);
 }
