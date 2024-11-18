@@ -73,6 +73,7 @@ status_code_t display_render(graphics_t *const graphics)
 
 status_code_t display_cleanup()
 {
+  SDL_DestroyRenderer(display_handle.renderer);
   SDL_DestroyWindow(display_handle.window);
   SDL_Quit();
 
