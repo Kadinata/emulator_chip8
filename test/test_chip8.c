@@ -121,18 +121,17 @@ void test_emulation_cycle_NOPs(void)
 {
   cpu_state_t cpu_state = {0};
   uint8_t opcodes[8] = {
-    0x00, 0x00,
-    0x80, 0x0A,
-    0xE0, 0x00,
-    0xFF, 0xFF
-  };
+      0x00, 0x00,
+      0x80, 0x0A,
+      0xE0, 0x00,
+      0xFF, 0xFF};
   stub_init_cpu_state(&cpu_state);
   memcpy(&cpu_state.memory[START_ADDRESS], opcodes, sizeof(opcodes));
 
   for (int8_t i = 0; i < 4; i++)
   {
     TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
-  } 
+  }
 }
 
 void test_emulation_cycle_null_ptr_check(void)
@@ -150,16 +149,19 @@ void test_op_00E0(void)
   stub_init_cpu_state(&cpu_state);
   stub_set_opcode(&cpu_state, 0x00E0, 0);
 
+  cpu_state.peripherals.graphics.display_update = 0;
   for (int16_t i = 0; i < GRAPHICS_SIZE; i++)
   {
-    cpu_state.peripherals.graphics[i] = (i % 2) ? 0x55 : 0xAA;
+    cpu_state.peripherals.graphics.buffer[i] = (i % 2) ? 0x55 : 0xAA;
   }
 
   TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
   for (int16_t i = 0; i < GRAPHICS_SIZE; i++)
   {
-    TEST_ASSERT_EQUAL_HEX8(0x00, cpu_state.peripherals.graphics[i]);
+    TEST_ASSERT_EQUAL_HEX8(0x00, cpu_state.peripherals.graphics.buffer[i]);
   }
+
+  TEST_ASSERT_EQUAL_INT(1, cpu_state.peripherals.graphics.display_update);
 }
 
 /**
