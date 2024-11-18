@@ -28,10 +28,10 @@ typedef struct registers_s
   uint8_t V[REG_COUNT];
 
   /** 16 x 16-bit stack to store return addresses when subroutines are called */
-  uint16_t stack[STACK_SIZE]; 
+  uint16_t stack[STACK_SIZE];
 } registers_t;
 
-/** 
+/**
  * Definitions of CPU timers.
  * Each one decerements by one at each cycle if its value is greater than 0.
  */
@@ -41,6 +41,16 @@ typedef struct timers_s
   uint8_t sound;
 } timers_t;
 
+/** Display / graphics */
+typedef struct graphics_s
+{
+  /** buffer for 64x32 px output monochrome display */
+  uint8_t buffer[GRAPHICS_SIZE];
+
+  /** Flag indicating the screen needs to be updated */
+  uint8_t display_update;
+} graphics_t;
+
 /** Definitions of CPU I/O / peripherals */
 typedef struct peripherals_s
 {
@@ -48,7 +58,7 @@ typedef struct peripherals_s
   uint8_t keypad[NUM_KEYS];
 
   /** 64x32 px output monochrome display */
-  uint8_t graphics[GRAPHICS_SIZE];
+  graphics_t graphics;
 } peripherals_t;
 
 /** CPU state definitions */

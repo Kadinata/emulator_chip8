@@ -314,9 +314,12 @@ status_code_t op_table_F(uint16_t const opcode, cpu_state_t *const state)
  * 0x00E0: CLS
  * Clears the screen
  */
-status_code_t op_00E0(uint16_t const opcode, cpu_state_t *const state)
+status_code_t op_00E0(uint16_t const __attribute__((unused))opcode, cpu_state_t *const state)
 {
-  memset(state->peripherals.graphics, 0, GRAPHICS_SIZE);
+  graphics_t *gfx = &state->peripherals.graphics;
+  memset(gfx->buffer, 0, GRAPHICS_SIZE);
+  gfx->display_update = 1;
+
   return STATUS_OK;
 }
 
@@ -324,7 +327,7 @@ status_code_t op_00E0(uint16_t const opcode, cpu_state_t *const state)
  * 0x00EE: RET
  * Return from a subroutine call
  */
-status_code_t op_00EE(uint16_t const opcode, cpu_state_t *const state)
+status_code_t op_00EE(uint16_t const __attribute__((unused))opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
@@ -678,6 +681,7 @@ status_code_t op_CXNN(uint16_t const opcode, cpu_state_t *const state)
 status_code_t op_DXYN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
+  graphics_t *gfx = &state->peripherals.graphics;
 
   uint8_t x = (opcode & 0x0F00) >> 8;
   uint8_t y = (opcode & 0x00F0) >> 4;
@@ -698,16 +702,17 @@ status_code_t op_DXYN(uint16_t const opcode, cpu_state_t *const state)
       {
         uint16_t screen_pixel_index = (x_pos + col) + ((y_pos + row) * GRAPHICS_WIDTH);
 
-        if (state->peripherals.graphics[screen_pixel_index])
+        if (gfx->buffer[screen_pixel_index])
         {
           reg->V[0xF] = 1;
         }
 
-        state->peripherals.graphics[screen_pixel_index] ^= 1;
+        gfx->buffer[screen_pixel_index] ^= 1;
       }
     }
   }
 
+  gfx->display_update = 1;
   return STATUS_OK;
 }
 
