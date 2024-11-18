@@ -156,12 +156,6 @@ status_code_t fetch(cpu_state_t *const state, uint16_t *const opcode)
   status_code_t status = STATUS_OK;
   registers_t *reg = &state->registers;
 
-  /** Instructions are 2 bytes. PC must always be pointing to an even address */
-  if (reg->pc & 0x1)
-  {
-    return STATUS_ERR_INVALID_ADDRESS;
-  }
-
   uint8_t bytes[2] = {0};
   status = mem_read(state, reg->pc, bytes, 2);
   RETURN_STATUS_IF_NOT_OK(status);

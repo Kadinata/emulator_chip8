@@ -72,16 +72,6 @@ void test_emulation_cycle_fetch_with_valid_address(void)
   TEST_ASSERT_EQUAL_HEX16(START_ADDRESS + 2, cpu_state.registers.pc);
 }
 
-void test_emulation_cycle_fetch_with_invalid_address(void)
-{
-  cpu_state_t cpu_state = {0};
-  stub_init_cpu_state(&cpu_state);
-  stub_set_opcode(&cpu_state, 0xFFFF, 0);
-  cpu_state.registers.pc += 1;
-
-  TEST_ASSERT_EQUAL_INT(STATUS_ERR_INVALID_ADDRESS, emulation_cycle(&cpu_state));
-}
-
 void test_emulation_cycle_fetch_with_out_of_bound_address(void)
 {
   cpu_state_t cpu_state = {0};
