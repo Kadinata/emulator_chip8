@@ -51,31 +51,30 @@ int main(int argc, char **argv)
   if (status != STATUS_OK)
   {
     Log_E("An error occurred while initializing display: %u", status);
-    main_loop = 0;
+    return display_cleanup();
   }
-  else 
-  {
-    Log_I("Display initialized successfully.");
-  }
+
+  Log_I("Display initialized successfully.");
 
   while (main_loop)
   {
-    status = emulation_cycle(&cpu_state);
-    if (status != STATUS_OK)
-    {
-      Log_F("Emulation cycle encountered an error: %u", status);
-      main_loop = 0;
-    }
 
     status = keypad_read(cpu_state.peripherals.keypad);
     if (status == STATUS_REQ_EXIT)
     {
-      Log_I("Exit requested");
+      Log_I("Exiting...");
       main_loop = 0;
     }
     else if (status != STATUS_OK)
     {
       Log_F("Keypad reading encountered an error: %u", status);
+      main_loop = 0;
+    }
+
+    status = emulation_cycle(&cpu_state);
+    if (status != STATUS_OK)
+    {
+      Log_F("Emulation cycle encountered an error: %u", status);
       main_loop = 0;
     }
 
@@ -95,5 +94,5 @@ int main(int argc, char **argv)
   {
     Log_E("An error occurred while cleaning up display: %u", status);
   }
-  return STATUS_OK;
+  return status;
 }
