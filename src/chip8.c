@@ -138,7 +138,13 @@ status_code_t emulation_cycle(cpu_state_t *const state)
   status = op_table[((opcode >> 12) & 0xF)](opcode, state);
   RETURN_STATUS_IF_NOT_OK(status);
 
-  // Decrement timers
+  return STATUS_OK;
+}
+
+status_code_t update_timers(cpu_state_t *const state)
+{
+  VERIFY_PTR_RETURN_ERROR_IF_NULL(state);
+
   if (state->timers.delay > 0)
   {
     state->timers.delay--;
@@ -310,7 +316,7 @@ status_code_t op_table_F(uint16_t const opcode, cpu_state_t *const state)
  * 0x00E0: CLS
  * Clears the screen
  */
-status_code_t op_00E0(uint16_t const __attribute__((unused))opcode, cpu_state_t *const state)
+status_code_t op_00E0(uint16_t const __attribute__((unused)) opcode, cpu_state_t *const state)
 {
   graphics_t *gfx = &state->peripherals.graphics;
   memset(gfx->buffer, 0, GRAPHICS_SIZE);
@@ -323,7 +329,7 @@ status_code_t op_00E0(uint16_t const __attribute__((unused))opcode, cpu_state_t 
  * 0x00EE: RET
  * Return from a subroutine call
  */
-status_code_t op_00EE(uint16_t const __attribute__((unused))opcode, cpu_state_t *const state)
+status_code_t op_00EE(uint16_t const __attribute__((unused)) opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 

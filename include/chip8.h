@@ -28,4 +28,12 @@ status_code_t load_rom(cpu_state_t *const state, const char *file);
  */
 status_code_t emulation_cycle(cpu_state_t *const state);
 
+/**
+ * Decrement the display and sound timers if > 0.
+ * This should be called at 60 Hz rate.
+ * @param state - Pointer to a CPU state.
+ * @return STATUS_OK if successful, otherwise appropriate error code.
+ */
+status_code_t update_timers(cpu_state_t *const state);
+
 #endif /* __CHIP_8_H__ */

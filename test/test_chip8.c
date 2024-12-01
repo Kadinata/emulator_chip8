@@ -81,30 +81,33 @@ void test_emulation_cycle_fetch_with_out_of_bound_address(void)
   TEST_ASSERT_EQUAL_INT(STATUS_ERR_MEM_OUT_OF_BOUNDS, emulation_cycle(&cpu_state));
 }
 
-void test_emulation_cycle_decrement_timers(void)
+void test_update_timers(void)
 {
   cpu_state_t cpu_state = {0};
   stub_init_cpu_state(&cpu_state);
-  stub_set_opcode(&cpu_state, 0xFFF0, 0);
   cpu_state.timers.delay = 0xAA;
   cpu_state.timers.sound = 0x55;
 
-  TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
+  TEST_ASSERT_EQUAL_INT(STATUS_OK, update_timers(&cpu_state));
   TEST_ASSERT_EQUAL_HEX16(0xAA - 1, cpu_state.timers.delay);
   TEST_ASSERT_EQUAL_HEX16(0x55 - 1, cpu_state.timers.sound);
 }
 
-void test_emulation_cycle_timers_at_0(void)
+void test_update_timers_at_0(void)
 {
   cpu_state_t cpu_state = {0};
   stub_init_cpu_state(&cpu_state);
-  stub_set_opcode(&cpu_state, 0xFFF0, 0);
   cpu_state.timers.delay = 0;
   cpu_state.timers.sound = 0;
 
-  TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
+  TEST_ASSERT_EQUAL_INT(STATUS_OK, update_timers(&cpu_state));
   TEST_ASSERT_EQUAL_HEX16(0, cpu_state.timers.delay);
   TEST_ASSERT_EQUAL_HEX16(0, cpu_state.timers.sound);
+}
+
+void test_update_timers_null_pointer(void)
+{
+  TEST_ASSERT_EQUAL_INT(STATUS_ERR_NULL_PTR, update_timers(NULL));
 }
 
 void test_emulation_cycle_NOPs(void)
@@ -835,7 +838,7 @@ void test_op_FX15(void)
   cpu_state.timers.delay = 0xAA;
 
   TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
-  TEST_ASSERT_EQUAL_HEX8(0x54, cpu_state.timers.delay);
+  TEST_ASSERT_EQUAL_HEX8(0x55, cpu_state.timers.delay);
 }
 
 /**
@@ -851,7 +854,7 @@ void test_op_FX18(void)
   cpu_state.timers.sound = 0xAA;
 
   TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
-  TEST_ASSERT_EQUAL_HEX8(0x54, cpu_state.timers.sound);
+  TEST_ASSERT_EQUAL_HEX8(0x55, cpu_state.timers.sound);
 }
 
 /**
