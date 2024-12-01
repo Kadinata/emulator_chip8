@@ -17,6 +17,8 @@
 #define Log_E(...) (Log(LOG_LEVEL_ERROR, __VA_ARGS__))
 #define Log_F(...) (Log(LOG_LEVEL_FATAL, __VA_ARGS__))
 
-#define Log(level, ...) ({fprintf(stderr, "\n%s [%s:%u]: ", level, __FILE_NAME__, __LINE__); fprintf(stderr, __VA_ARGS__);})
+#define LOG_FN(...) (fprintf(stderr, __VA_ARGS__))
+
+#define Log(level, ...) ({LOG_FN("\n%s [%s:%u]: ", level, __FILE_NAME__, __LINE__); LOG_FN(__VA_ARGS__);})
 
 #endif
