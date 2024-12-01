@@ -406,6 +406,24 @@ void test_op_8XY1(void)
 }
 
 /**
+ * Test 0x8XY1: OR Vx, Vy
+ * Bitwise-OR the value in register V[Y] into V[X]
+ * and V[F] reset
+ */
+void test_op_8XY1_resets_VF(void)
+{
+  cpu_state_t cpu_state = {0};
+  stub_init_cpu_state(&cpu_state);
+  stub_set_opcode(&cpu_state, 0x8011, 0);
+  cpu_state.registers.V[0] = 0x55;
+  cpu_state.registers.V[1] = 0x33;
+  cpu_state.registers.V[0xF] = 0xAA;
+
+  TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
+  TEST_ASSERT_EQUAL_HEX8(0, cpu_state.registers.V[0xF]);
+}
+
+/**
  * Test 0x8XY2: AND Vx, Vy
  * Bitwise-AND the value in register V[Y] into V[X]
  */
@@ -422,6 +440,24 @@ void test_op_8XY2(void)
 }
 
 /**
+ * Test 0x8XY2: AND Vx, Vy
+ * Bitwise-AND the value in register V[Y] into V[X]
+ * and V[F] reset
+ */
+void test_op_8XY2_resets_VF(void)
+{
+  cpu_state_t cpu_state = {0};
+  stub_init_cpu_state(&cpu_state);
+  stub_set_opcode(&cpu_state, 0x8012, 0);
+  cpu_state.registers.V[0] = 0x55;
+  cpu_state.registers.V[1] = 0x33;
+  cpu_state.registers.V[0xF] = 0xAA;
+
+  TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
+  TEST_ASSERT_EQUAL_HEX8(0, cpu_state.registers.V[0xF]);
+}
+
+/**
  * Test 0x8XY3: XOR Vx, Vy
  * Bitwise-XOR the value in register V[Y] into V[X]
  */
@@ -435,6 +471,24 @@ void test_op_8XY3(void)
 
   TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
   TEST_ASSERT_EQUAL_HEX8(0x66, cpu_state.registers.V[0]);
+}
+
+/**
+ * Test 0x8XY3: XOR Vx, Vy
+ * Bitwise-XOR the value in register V[Y] into V[X]
+ * and V[F] reset
+ */
+void test_op_8XY3_resets_VF(void)
+{
+  cpu_state_t cpu_state = {0};
+  stub_init_cpu_state(&cpu_state);
+  stub_set_opcode(&cpu_state, 0x8013, 0);
+  cpu_state.registers.V[0] = 0x55;
+  cpu_state.registers.V[1] = 0x33;
+  cpu_state.registers.V[0xF] = 0xAA;
+
+  TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
+  TEST_ASSERT_EQUAL_HEX8(0, cpu_state.registers.V[0xF]);
 }
 
 /**

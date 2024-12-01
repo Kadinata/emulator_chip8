@@ -473,6 +473,7 @@ status_code_t op_8XY0(uint16_t const opcode, cpu_state_t *const state)
 /**
  * 0x8XY1: OR Vx, Vy
  * Bitwise-OR the value in register V[Y] into V[X]
+ * Note: This resets V[F] to 0
  */
 status_code_t op_8XY1(uint16_t const opcode, cpu_state_t *const state)
 {
@@ -482,6 +483,7 @@ status_code_t op_8XY1(uint16_t const opcode, cpu_state_t *const state)
   uint8_t y = (opcode & 0x00F0) >> 4;
 
   reg->V[x] |= reg->V[y];
+  reg->V[0xF] = 0;
 
   return STATUS_OK;
 }
@@ -489,6 +491,7 @@ status_code_t op_8XY1(uint16_t const opcode, cpu_state_t *const state)
 /**
  * 0x8XY2: AND Vx, Vy
  * Bitwise-AND the value in register V[Y] into V[X]
+ * Note: This resets V[F] to 0
  */
 status_code_t op_8XY2(uint16_t const opcode, cpu_state_t *const state)
 {
@@ -498,6 +501,7 @@ status_code_t op_8XY2(uint16_t const opcode, cpu_state_t *const state)
   uint8_t y = (opcode & 0x00F0) >> 4;
 
   reg->V[x] &= reg->V[y];
+  reg->V[0xF] = 0;
 
   return STATUS_OK;
 }
@@ -505,6 +509,7 @@ status_code_t op_8XY2(uint16_t const opcode, cpu_state_t *const state)
 /**
  * 0x8XY3: XOR Vx, Vy
  * Bitwise-XOR the value in register V[Y] into V[X]
+ * Note: This resets V[F] to 0
  */
 status_code_t op_8XY3(uint16_t const opcode, cpu_state_t *const state)
 {
@@ -514,6 +519,7 @@ status_code_t op_8XY3(uint16_t const opcode, cpu_state_t *const state)
   uint8_t y = (opcode & 0x00F0) >> 4;
 
   reg->V[x] ^= reg->V[y];
+  reg->V[0xF] = 0;
 
   return STATUS_OK;
 }
