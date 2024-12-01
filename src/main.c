@@ -7,6 +7,7 @@
 #include "keypad.h"
 #include "display.h"
 #include "logging.h"
+#include "debugger.h"
 
 #define WINDOW_TITLE ("Chip-8 Emulator")
 
@@ -70,6 +71,8 @@ int main(int argc, char **argv)
       Log_F("Keypad reading encountered an error: %u", status);
       main_loop = 0;
     }
+
+    debug_cpu_state(&cpu_state);
 
     status = emulation_cycle(&cpu_state);
     if (status != STATUS_OK)
