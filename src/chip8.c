@@ -78,12 +78,14 @@ status_code_t init_cpu(cpu_state_t *const state)
 {
   VERIFY_PTR_RETURN_ERROR_IF_NULL(state);
 
+  status_code_t status = STATUS_OK;
+
   srand((uint16_t)time(NULL));
   memset(state, 0, sizeof(cpu_state_t));
-  memcpy(state->memory, fontset, sizeof(fontset));
   state->registers.pc = START_ADDRESS;
+  status = mem_write(state, 0, fontset, sizeof(fontset));
 
-  return STATUS_OK;
+  return status;
 }
 
 status_code_t load_rom(cpu_state_t *const state, const char *file)
@@ -688,26 +690,32 @@ status_code_t op_DXYN(uint16_t const opcode, cpu_state_t *const state)
   uint8_t h = (opcode & 0x000F);
   uint8_t pixel = 0;
 
-  uint16_t x_pos = reg->V[x] % GRAPHICS_WIDTH;
-  uint16_t y_pos = reg->V[y] % GRAPHICS_HEIGHT;
+  uint16_t x_orig = reg->V[x] % GRAPHICS_WIDTH;
+  uint16_t y_orig = reg->V[y] % GRAPHICS_HEIGHT;
 
   reg->V[0xF] = 0;
   for (uint16_t row = 0; row < h; row++)
   {
-    pixel = state->memory[reg->I + row];
+    status_code_t status = mem_read(state, reg->I + row, &pixel, 1);
+    RETURN_STATUS_IF_NOT_OK(status);
 
     for (uint16_t col = 0; col < 8; col++)
     {
       if (pixel & (0x80 >> col))
       {
-        uint16_t screen_pixel_index = (x_pos + col) + ((y_pos + row) * GRAPHICS_WIDTH);
+        uint16_t y_pos = y_orig + row;
+        uint16_t x_pos = x_orig + col;
+        uint16_t index = x_pos + (y_pos * GRAPHICS_WIDTH);
 
-        if (gfx->buffer[screen_pixel_index])
+        if ((y_pos < GRAPHICS_HEIGHT) && (x_pos < GRAPHICS_WIDTH))
         {
-          reg->V[0xF] = 1;
-        }
+          if (gfx->buffer[index])
+          {
+            reg->V[0xF] = 1;
+          }
 
-        gfx->buffer[screen_pixel_index] ^= 1;
+          gfx->buffer[index] ^= 1;
+        }
       }
     }
   }
