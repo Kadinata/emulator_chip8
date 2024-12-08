@@ -9,6 +9,12 @@
 #include "cpu_def.h"
 #include "status_code.h"
 
+#define DECODE_X(opcode) ((opcode >> 8) & 0xF)
+#define DECODE_Y(opcode) ((opcode >> 4) & 0xF)
+#define DECODE_N(opcode) (opcode & 0xF)
+#define DECODE_NN(opcode) (opcode & 0xFF)
+#define DECODE_NNN(opcode) (opcode & 0xFFF)
+
 status_code_t fetch(cpu_state_t *const state, uint16_t *const opcode);
 status_code_t mem_read(cpu_state_t *const state, const uint16_t address, uint8_t *const dest, const size_t size);
 status_code_t mem_write(cpu_state_t *const state, const uint16_t address, uint8_t *const source, const size_t size);
@@ -200,7 +206,7 @@ status_code_t op_table_0(uint16_t const opcode, cpu_state_t *const state)
 {
   status_code_t status = STATUS_OK;
 
-  switch (opcode & 0x00FF)
+  switch (DECODE_NN(opcode))
   {
   case 0xE0:
     status = op_00E0(opcode, state);
@@ -219,7 +225,7 @@ status_code_t op_table_8(uint16_t const opcode, cpu_state_t *const state)
 {
   status_code_t status = STATUS_OK;
 
-  switch (opcode & 0x000F)
+  switch (DECODE_N(opcode))
   {
   case 0x0:
     status = op_8XY0(opcode, state);
@@ -258,7 +264,7 @@ status_code_t op_table_E(uint16_t const opcode, cpu_state_t *const state)
 {
   status_code_t status = STATUS_OK;
 
-  switch (opcode & 0xFF)
+  switch (DECODE_NN(opcode))
   {
   case 0x9E:
     status = op_EX9E(opcode, state);
@@ -276,7 +282,7 @@ status_code_t op_table_F(uint16_t const opcode, cpu_state_t *const state)
 {
   status_code_t status = STATUS_OK;
 
-  switch (opcode & 0xFF)
+  switch (DECODE_NN(opcode))
   {
   case 0x07:
     status = op_FX07(opcode, state);
@@ -351,7 +357,7 @@ status_code_t op_00EE(uint16_t const __attribute__((unused)) opcode, cpu_state_t
 status_code_t op_1NNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
-  reg->pc = opcode & 0x0FFF;
+  reg->pc = DECODE_NNN(opcode);
 
   return STATUS_OK;
 }
@@ -371,7 +377,7 @@ status_code_t op_2NNN(uint16_t const opcode, cpu_state_t *const state)
 
   reg->stack[reg->sp] = reg->pc;
   reg->sp++;
-  reg->pc = opcode & 0x0FFF;
+  reg->pc = DECODE_NNN(opcode);
 
   return STATUS_OK;
 }
@@ -384,9 +390,9 @@ status_code_t op_3XNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
-  if (reg->V[x] == (opcode & 0x00FF))
+  if (reg->V[x] == DECODE_NN(opcode))
   {
     reg->pc += 2;
   }
@@ -402,9 +408,9 @@ status_code_t op_4XNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
-  if (reg->V[x] != (opcode & 0x00FF))
+  if (reg->V[x] != DECODE_NN(opcode))
   {
     reg->pc += 2;
   }
@@ -420,8 +426,8 @@ status_code_t op_5XY0(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
-  uint8_t y = (opcode & 0x00F0) >> 4;
+  uint8_t x = DECODE_X(opcode);
+  uint8_t y = DECODE_Y(opcode);
 
   if (reg->V[x] == reg->V[y])
   {
@@ -439,9 +445,9 @@ status_code_t op_6XNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
-  reg->V[x] = (opcode & 0x00FF);
+  reg->V[x] = DECODE_NN(opcode);
 
   return STATUS_OK;
 }
@@ -455,9 +461,9 @@ status_code_t op_7XNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
-  reg->V[x] += (opcode & 0x00FF);
+  reg->V[x] += DECODE_NN(opcode);
 
   return STATUS_OK;
 }
@@ -470,8 +476,8 @@ status_code_t op_8XY0(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
-  uint8_t y = (opcode & 0x00F0) >> 4;
+  uint8_t x = DECODE_X(opcode);
+  uint8_t y = DECODE_Y(opcode);
 
   reg->V[x] = reg->V[y];
 
@@ -487,8 +493,8 @@ status_code_t op_8XY1(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
-  uint8_t y = (opcode & 0x00F0) >> 4;
+  uint8_t x = DECODE_X(opcode);
+  uint8_t y = DECODE_Y(opcode);
 
   reg->V[x] |= reg->V[y];
   reg->V[0xF] = 0;
@@ -505,8 +511,8 @@ status_code_t op_8XY2(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
-  uint8_t y = (opcode & 0x00F0) >> 4;
+  uint8_t x = DECODE_X(opcode);
+  uint8_t y = DECODE_Y(opcode);
 
   reg->V[x] &= reg->V[y];
   reg->V[0xF] = 0;
@@ -523,8 +529,8 @@ status_code_t op_8XY3(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
-  uint8_t y = (opcode & 0x00F0) >> 4;
+  uint8_t x = DECODE_X(opcode);
+  uint8_t y = DECODE_Y(opcode);
 
   reg->V[x] ^= reg->V[y];
   reg->V[0xF] = 0;
@@ -541,11 +547,11 @@ status_code_t op_8XY4(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
-  uint8_t y = (opcode & 0x00F0) >> 4;
+  uint8_t x = DECODE_X(opcode);
+  uint8_t y = DECODE_Y(opcode);
   uint16_t sum = 0;
 
-  sum = reg->V[x];
+  sum  = reg->V[x];
   sum += reg->V[y];
 
   reg->V[0xF] = (sum & 0xFF00) ? 1 : 0;
@@ -563,8 +569,8 @@ status_code_t op_8XY5(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
-  uint8_t y = (opcode & 0x00F0) >> 4;
+  uint8_t x = DECODE_X(opcode);
+  uint8_t y = DECODE_Y(opcode);
 
   reg->V[0xF] = (reg->V[x] > reg->V[y]) ? 1 : 0;
   reg->V[x] -= reg->V[y];
@@ -580,7 +586,7 @@ status_code_t op_8X06(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
   reg->V[0xF] = (reg->V[x] & 0x1);
   reg->V[x] >>= 1;
@@ -597,8 +603,8 @@ status_code_t op_8XY7(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
-  uint8_t y = (opcode & 0x00F0) >> 4;
+  uint8_t x = DECODE_X(opcode);
+  uint8_t y = DECODE_Y(opcode);
 
   reg->V[0xF] = (reg->V[y] > reg->V[x]) ? 1 : 0;
   reg->V[x] = reg->V[y] - reg->V[x];
@@ -614,7 +620,7 @@ status_code_t op_8X0E(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
   reg->V[0xF] = (reg->V[x] & 0x80) >> 7;
   reg->V[x] <<= 1;
@@ -630,8 +636,8 @@ status_code_t op_9XY0(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
-  uint8_t y = (opcode & 0x00F0) >> 4;
+  uint8_t x = DECODE_X(opcode);
+  uint8_t y = DECODE_Y(opcode);
 
   if (reg->V[x] != reg->V[y])
   {
@@ -649,7 +655,7 @@ status_code_t op_ANNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  reg->I = (opcode & 0xFFF);
+  reg->I = DECODE_NNN(opcode);
 
   return STATUS_OK;
 }
@@ -662,7 +668,7 @@ status_code_t op_BNNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  reg->pc = reg->V[0] + (opcode & 0x0FFF);
+  reg->pc = reg->V[0] + DECODE_NNN(opcode);
 
   return STATUS_OK;
 }
@@ -675,7 +681,7 @@ status_code_t op_CXNN(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
   reg->V[x] = (rand() & (opcode)) & 0x00FF;
 
@@ -691,9 +697,9 @@ status_code_t op_DXYN(uint16_t const opcode, cpu_state_t *const state)
   registers_t *reg = &state->registers;
   graphics_t *gfx = &state->peripherals.graphics;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
-  uint8_t y = (opcode & 0x00F0) >> 4;
-  uint8_t h = (opcode & 0x000F);
+  uint8_t x = DECODE_X(opcode);
+  uint8_t y = DECODE_Y(opcode);
+  uint8_t h = DECODE_N(opcode);
   uint8_t pixel = 0;
 
   uint16_t x_orig = reg->V[x] % GRAPHICS_WIDTH;
@@ -736,7 +742,7 @@ status_code_t op_DXYN(uint16_t const opcode, cpu_state_t *const state)
  */
 status_code_t op_EX9E(uint16_t const opcode, cpu_state_t *const state)
 {
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
   registers_t *reg = &state->registers;
 
@@ -754,7 +760,7 @@ status_code_t op_EX9E(uint16_t const opcode, cpu_state_t *const state)
  */
 status_code_t op_EXA1(uint16_t const opcode, cpu_state_t *const state)
 {
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
   registers_t *reg = &state->registers;
 
@@ -772,7 +778,7 @@ status_code_t op_EXA1(uint16_t const opcode, cpu_state_t *const state)
  */
 status_code_t op_FX07(uint16_t const opcode, cpu_state_t *const state)
 {
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
   registers_t *reg = &state->registers;
 
@@ -790,7 +796,7 @@ status_code_t op_FX0A(uint16_t const opcode, cpu_state_t *const state)
   registers_t *reg = &state->registers;
 
   uint8_t key_pressed = 0;
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
   for (uint8_t i = 0; i < NUM_KEYS; i++)
   {
@@ -817,7 +823,7 @@ status_code_t op_FX15(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
   state->timers.delay = reg->V[x];
 
@@ -832,7 +838,7 @@ status_code_t op_FX18(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
   state->timers.sound = reg->V[x];
 
@@ -847,7 +853,7 @@ status_code_t op_FX1E(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
   reg->I += reg->V[x];
 
@@ -862,7 +868,7 @@ status_code_t op_FX29(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
 
   reg->I = reg->V[x] * 5;
 
@@ -881,7 +887,7 @@ status_code_t op_FX33(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  uint8_t x = (opcode & 0x0F00) >> 8;
+  uint8_t x = DECODE_X(opcode);
   uint8_t value = reg->V[x];
   uint8_t bcd[3] = {0};
 
@@ -905,7 +911,7 @@ status_code_t op_FX55(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  size_t size = ((opcode & 0x0F00) >> 8) + 1;
+  size_t size = DECODE_X(opcode) + 1;
 
   return mem_write(state, reg->I, reg->V, size);
 }
@@ -919,7 +925,7 @@ status_code_t op_FX65(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
 
-  size_t size = ((opcode & 0x0F00) >> 8) + 1;
+  size_t size = DECODE_X(opcode) + 1;
 
   return mem_read(state, reg->I, reg->V, size);
 }
