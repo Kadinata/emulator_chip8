@@ -2,10 +2,23 @@ CC = gcc
 CFLAGS = -Iinclude -pedantic -Wall -Wextra -Wno-gnu-statement-expression -std=c99
 LDFLAGS = -L/usr/local/lib
 
-SOURCES = src/main.c src/chip8.c src/keypad.c src/display.c src/timer.c
-HEADERS = include/chip8.h include/cpu_def.h include/status_code.h include/keypad.h include/display.h include/logging.h include/timer.h
+SOURCES = src/main.c
+SOURCES += src/chip8.c
+SOURCES += src/keypad.c
+SOURCES += src/display.c
+SOURCES += src/timer.c
+SOURCES += src/audio.c
+
+HEADERS = include/chip8.h
+HEADERS += include/cpu_def.h
+HEADERS += include/status_code.h
+HEADERS += include/keypad.h include/display.h
+HEADERS += include/logging.h
+HEADERS += include/timer.h
+HEADERS += include/audio.h
+
 LIBS = -lSDL2
-OBJS = objects/main.o objects/chip8.o objects/keypad.o objects/display.o objects/timer.o
+OBJS = objects/main.o objects/chip8.o objects/keypad.o objects/display.o objects/timer.o objects/audio.o
 
 all: bin/chip8_emu.out
 

@@ -5,6 +5,7 @@
 
 #include "chip8.h"
 #include "keypad.h"
+#include "audio.h"
 #include "display.h"
 #include "logging.h"
 #include "timer.h"
@@ -76,6 +77,15 @@ int main(int argc, char **argv)
     return display_cleanup();
   }
   Log_I("Display initialized successfully.");
+
+  Log_I("Setting up audio...");
+  status = audio_init();
+  if (status != STATUS_OK)
+  {
+    Log_E("An error occurred while initializing audio: %u", status);
+    return display_cleanup();
+  }
+  Log_I("Audio initialized successfully.");
 
   while (main_loop)
   {

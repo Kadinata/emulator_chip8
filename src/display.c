@@ -3,6 +3,7 @@
 
 #include "display.h"
 #include "cpu_def.h"
+#include "logging.h"
 #include "status_code.h"
 
 #define PIXEL_WIDTH (8)
@@ -19,7 +20,12 @@ status_code_t display_init(const uint8_t *title)
 {
   VERIFY_PTR_RETURN_ERROR_IF_NULL(title);
 
-  SDL_Init(SDL_INIT_VIDEO);
+  int16_t init_result;
+  if ((init_result = SDL_InitSubSystem(SDL_INIT_VIDEO)) != 0) {
+    Log_E("Failed to inittialize SDL Video Subsystem (%d)", init_result);
+    return STATUS_ERR_GENERIC;
+  }
+
   display_handle.window = SDL_CreateWindow(
       (char *)title,
       SDL_WINDOWPOS_CENTERED,
