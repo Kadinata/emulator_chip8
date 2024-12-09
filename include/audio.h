@@ -5,6 +5,7 @@
 
 status_code_t audio_init();
 status_code_t audio_play_beep();
+status_code_t audio_mute();
 status_code_t audio_cleanup();
 
 #endif /* __AUDIO_H__ */

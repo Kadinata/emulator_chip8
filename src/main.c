@@ -113,6 +113,14 @@ int main(int argc, char **argv)
 
       if (timer_check(&display_timer))
       {
+        if(cpu_state.timers.sound > 0)
+        {
+          audio_play_beep();
+        }
+        else
+        {
+          audio_mute();
+        }
         update_timers(&cpu_state);
       }
 
@@ -123,6 +131,12 @@ int main(int argc, char **argv)
         main_loop = 0;
       }
     }
+  }
+
+  status = audio_cleanup();
+  if (status != STATUS_OK)
+  {
+    Log_E("An error occurred while cleaning up audio: %u", status);
   }
 
   status = display_cleanup();
