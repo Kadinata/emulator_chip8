@@ -21,13 +21,9 @@ void print_usage(void)
 
 status_code_t cleanup()
 {
-  status_code_t status = audio_cleanup();
-  if (status != STATUS_OK)
-  {
-    Log_E("An error occurred while cleaning up audio: %u", status);
-  }
+  audio_cleanup();
 
-  status = display_cleanup();
+  status_code_t status = display_cleanup();
   if (status != STATUS_OK)
   {
     Log_E("An error occurred while cleaning up display: %u", status);

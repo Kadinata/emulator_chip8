@@ -109,20 +109,17 @@ status_code_t audio_init(audio_init_param_t *const param)
   return status;
 }
 
-status_code_t audio_play_beep()
+void audio_play_beep()
 {
   SDL_PauseAudioDevice(audio_handle.audio_device, 0);
-  return STATUS_OK;
 }
 
-status_code_t audio_mute()
+void audio_mute()
 {
   SDL_PauseAudioDevice(audio_handle.audio_device, 1);
-  return STATUS_OK;
 }
 
-status_code_t audio_cleanup()
+void audio_cleanup()
 {
   SDL_CloseAudioDevice(audio_handle.audio_device);
-  return STATUS_OK;
 }

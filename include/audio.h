@@ -29,20 +29,20 @@ status_code_t audio_init(audio_init_param_t *const param);
  * Emit tone with a frequency that's configured during initialization.
  * The tone will continue to be emitted until audio_mute is called.
  * This function should be called when the sound timer is greater than 0.
- * @return STATUS_OK if successful, otherwise appropriate error code.
+ * @return None
  */
-status_code_t audio_play_beep();
+void audio_play_beep();
 
 /**
  * Stop the tone. This should be called when the sound timer is 0.
- * @return STATUS_OK if successful, otherwise appropriate error code.
+ * @return None
  */
-status_code_t audio_mute();
+void audio_mute();
 
 /**
  * Cleanup and free audio resources
- * @return STATUS_OK if successful, otherwise appropriate error code.
+ * @return None
  */
-status_code_t audio_cleanup();
+void audio_cleanup();
 
 #endif /* __AUDIO_H__ */
