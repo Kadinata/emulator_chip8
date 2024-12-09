@@ -23,8 +23,8 @@ status_code_t display_render(graphics_t * const graphics);
 
 /**
  * Cleanup and free display resources
- * @return STATUS_OK if successful, otherwise appropriate error code.
+ * @return None
  */
-status_code_t display_cleanup();
+void display_cleanup();
 
 #endif /* __DISPLAY_H__ */

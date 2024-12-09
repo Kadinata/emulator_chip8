@@ -19,17 +19,10 @@ void print_usage(void)
   printf("\nUsage: chip8_emu.out <ROM file>\n");
 }
 
-status_code_t cleanup()
+void cleanup()
 {
   audio_cleanup();
-
-  status_code_t status = display_cleanup();
-  if (status != STATUS_OK)
-  {
-    Log_E("An error occurred while cleaning up display: %u", status);
-  }
-
-  return status;
+  display_cleanup();
 }
 
 int main(int argc, char **argv)
@@ -40,8 +33,8 @@ int main(int argc, char **argv)
   status_code_t status = STATUS_OK;
   uint8_t main_loop = 1;
   audio_init_param_t audio_init_param = (audio_init_param_t){
-    .sample_freq_hz = DEFAULT_SAMPLE_FREQ_HZ,
-    .tone_freq_hz = DEFAULT_TONE_FREQ_HZ,
+      .sample_freq_hz = DEFAULT_SAMPLE_FREQ_HZ,
+      .tone_freq_hz = DEFAULT_TONE_FREQ_HZ,
   };
 
   if (argc != 2)
@@ -50,6 +43,7 @@ int main(int argc, char **argv)
     return STATUS_ERR_GENERIC;
   }
 
+  // Initialize the CPU
   Log_I("Initializing CPU...");
   status = init_cpu(&cpu_state);
   if (status != STATUS_OK)
@@ -59,6 +53,7 @@ int main(int argc, char **argv)
   }
   Log_I("CPU Init complete.");
 
+  // Load ROM file content to memory
   Log_I("Loading ROM file: %s", argv[1]);
   status = load_rom(&cpu_state, argv[1]);
   if (status != STATUS_OK)
@@ -68,42 +63,43 @@ int main(int argc, char **argv)
   }
   Log_I("ROM loaded succesfully.");
 
+  // Initialize system frequency timer
   Log_I("Initializing system timer...");
   status = timer_init(&system_timer, LOOP_FREQ_HZ);
   if (status != STATUS_OK)
   {
     Log_E("An error occurred while initializing system timer: %u", status);
-    return display_cleanup();
+    return status;
   }
   Log_I("System timer successfully.");
 
+  // Initialize display and audio timer
   Log_I("Initializing 60 Hz display timer...");
   status = timer_init(&display_timer, DISPLAY_FREQ_HZ);
   if (status != STATUS_OK)
   {
     Log_E("An error occurred while initializing the 60 Hz display timer: %u", status);
-    return cleanup();
+    return status;
   }
   Log_I("60 Hz display timer successfully.");
 
-  Log_I("Setting up display...");
+  // Initialize the display module
   status = display_init(WINDOW_TITLE);
   if (status != STATUS_OK)
   {
-    Log_E("An error occurred while initializing display: %u", status);
-    return cleanup();
+    cleanup();
+    return status;
   }
-  Log_I("Display initialized successfully.");
 
-  Log_I("Setting up audio...");
+  // Initialize the audio module
   status = audio_init(&audio_init_param);
   if (status != STATUS_OK)
   {
-    Log_E("An error occurred while initializing audio: %u", status);
-    return cleanup();
+    cleanup();
+    return status;
   }
-  Log_I("Audio initialized successfully.");
 
+  Log_I("Starting the main execution loop");
   while (main_loop)
   {
 
@@ -143,11 +139,6 @@ int main(int argc, char **argv)
     }
   }
 
-  status = cleanup();
-  if (status != STATUS_OK)
-  {
-    Log_E("An error occurred while performing cleanup: %u", status);
-  }
-
+  cleanup();
   return status;
 }

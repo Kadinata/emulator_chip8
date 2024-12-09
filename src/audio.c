@@ -40,6 +40,8 @@ static void audio_callback(void __attribute__((unused)) * userdata, uint8_t *aud
 
 status_code_t audio_init(audio_init_param_t *const param)
 {
+  Log_I("Initializing the audio module...");
+
   VERIFY_PTR_RETURN_ERROR_IF_NULL(param);
 
   if ((param->sample_freq_hz == 0) || (param->tone_freq_hz == 0))
@@ -121,5 +123,6 @@ void audio_mute()
 
 void audio_cleanup()
 {
+  Log_I("Cleaning up the audio module.");
   SDL_CloseAudioDevice(audio_handle.audio_device);
 }

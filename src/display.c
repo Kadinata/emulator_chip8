@@ -18,6 +18,8 @@ static display_handle_t display_handle;
 
 status_code_t display_init(const uint8_t *title)
 {
+  Log_I("Initializing the display module...");
+
   VERIFY_PTR_RETURN_ERROR_IF_NULL(title);
 
   int16_t init_result;
@@ -36,6 +38,7 @@ status_code_t display_init(const uint8_t *title)
 
   display_handle.renderer = SDL_CreateRenderer(display_handle.window, -1, SDL_RENDERER_ACCELERATED);
 
+  Log_I("Display module successfully initialized.");
   return STATUS_OK;
 }
 
@@ -77,11 +80,10 @@ status_code_t display_render(graphics_t *const graphics)
   return STATUS_OK;
 }
 
-status_code_t display_cleanup()
+void display_cleanup()
 {
+  Log_I("Cleaning up the display module.");
   SDL_DestroyRenderer(display_handle.renderer);
   SDL_DestroyWindow(display_handle.window);
   SDL_Quit();
-
-  return STATUS_OK;
 }
