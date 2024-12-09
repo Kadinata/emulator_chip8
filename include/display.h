@@ -8,9 +8,10 @@
 
 /**
  * Initializes the display and allocate resources for it.
+ * @param title - The desired title of the window to be created.
  * @return STATUS_OK if successful, otherwise appropriate error code.
  */
-status_code_t display_init();
+status_code_t display_init(const uint8_t *title);
 
 /**
  * Render the contents of the provided graphics buffer onto the display
