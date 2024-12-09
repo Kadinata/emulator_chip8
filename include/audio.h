@@ -6,7 +6,7 @@
 
 #define DEFAULT_SAMPLE_FREQ_HZ (44100) // 44.1 kHz audio sampling rate
 #define DEFAULT_TONE_FREQ_HZ (261)     // Default beep note, roughly the frequency of the middle C in the A440 pitch
-#define DEFAULT_VOLUME (12)            // Audio volume level from 0 to 127
+#define DEFAULT_VOLUME (3000)          // Audio volume level from 0 to 32767
 
 /** Parameters to initialize the audio module */
 typedef struct audio_init_param_s

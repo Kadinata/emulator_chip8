@@ -33,6 +33,7 @@ static void audio_callback(void __attribute__((unused)) * userdata, uint8_t *aud
 
   int32_t output;
   int32_t samples_per_period = audio_handle.sample_freq_hz / audio_handle.tone_freq_hz;
+  int16_t* int16_buf = (int16_t*)audio_buffer;
 
   /**
    * Generate samples of a triangular wave and fill the audio output buffer with them.
@@ -43,30 +44,30 @@ static void audio_callback(void __attribute__((unused)) * userdata, uint8_t *aud
    *
    * Finding the slope
    *    slope = rise / run
-   *    slope = amplitude / (sps / 2)
-   *    slope = 2 * amplitude / sps, where sps = number of samples per wave period
+   *    slope = amplitude / (spp / 2)
+   *    slope = 2 * amplitude / spp, where spp = number of samples per wave period
    *
    * The amplitude ranges from -volume to +volume; therefore:
    *    amplitude = 2 * volume
-   *    slope = 4 * volume / sps
+   *    slope = 4 * volume / spp
    *
    * x_offset should shift the wave a half period to the right; therefore:
-   *    x_offset = sps / 2
+   *    x_offset = spp / 2
    *
    * y_offset should center the wave around 0; therefore:
    *    y_offset = -amplitude / 2
    *    y_offset = -volume
    *
    * Putting it together:
-   *    y = abs((4 * volume / sps) * (x - sps / 2)) - volume
-   *    y = abs((4 * volume * x / sps) - (4 * volume * sps) * (sps / 2)) - volume
-   *    y = abs((4 * volume * x / sps) - (2 * volume)) - volume
+   *    y = abs((4 * volume / spp) * (x - spp / 2)) - volume
+   *    y = abs((4 * volume * x / spp) - (4 * volume * spp) * (spp / 2)) - volume
+   *    y = abs((4 * volume * x / spp) - (2 * volume)) - volume
    */
-  for (int i = 0; i < len; i++)
+  for (int i = 0; i < len/2; i++)
   {
     output = 4 * DEFAULT_VOLUME * sample_num / samples_per_period;
     output = abs(output - (2 * DEFAULT_VOLUME)) - DEFAULT_VOLUME;
-    audio_buffer[i] = (int8_t)output;
+    int16_buf[i] = (int16_t)output;
     sample_num++;
     sample_num %= samples_per_period;
   }
@@ -92,7 +93,7 @@ status_code_t audio_init(audio_init_param_t *const param)
 
   SDL_AudioSpec desired_spec = (SDL_AudioSpec){
       .freq = param->sample_freq_hz,
-      .format = AUDIO_S8,
+      .format = AUDIO_S16LSB,
       .channels = 1,
       .samples = 512,
       .callback = audio_callback,
