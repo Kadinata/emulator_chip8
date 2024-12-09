@@ -26,6 +26,10 @@ int main(int argc, char **argv)
   timer_t system_timer, display_timer;
   status_code_t status = STATUS_OK;
   uint8_t main_loop = 1;
+  audio_init_param_t audio_init_param = (audio_init_param_t){
+    .sample_freq_hz = DEFAULT_SAMPLE_FREQ_HZ,
+    .tone_freq_hz = DEFAULT_TONE_FREQ_HZ,
+  };
 
   if (argc != 2)
   {
@@ -79,7 +83,7 @@ int main(int argc, char **argv)
   Log_I("Display initialized successfully.");
 
   Log_I("Setting up audio...");
-  status = audio_init();
+  status = audio_init(&audio_init_param);
   if (status != STATUS_OK)
   {
     Log_E("An error occurred while initializing audio: %u", status);
@@ -113,14 +117,7 @@ int main(int argc, char **argv)
 
       if (timer_check(&display_timer))
       {
-        if(cpu_state.timers.sound > 0)
-        {
-          audio_play_beep();
-        }
-        else
-        {
-          audio_mute();
-        }
+        ((cpu_state.timers.sound > 0) ? audio_play_beep() : audio_mute());
         update_timers(&cpu_state);
       }
 
