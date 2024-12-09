@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdlib.h>
 #include <SDL2/SDL.h>
 
 #include "audio.h"
@@ -20,7 +21,7 @@ static audio_handle_t audio_handle;
 
 /**
  * Handler function to populate SDL's audio output buffer with audio samples. In this case,
- * the buffer will be populated with square wave samples.
+ * the buffer will be populated with triangular wave samples.
  * @param userdata - Pointer to custom user data (unused)
  * @param audio_buffer - Audio output buffer provided by SDL
  * @param len - Number of samples requested by SDL
@@ -30,11 +31,44 @@ static void audio_callback(void __attribute__((unused)) * userdata, uint8_t *aud
 {
   static uint32_t sample_num = 0;
 
+  int32_t output;
+  int32_t samples_per_period = audio_handle.sample_freq_hz / audio_handle.tone_freq_hz;
+
+  /**
+   * Generate samples of a triangular wave and fill the audio output buffer with them.
+   * One period of the triangular wave is based on the scaled and shifted version of
+   * y = abs(x) where the range of x is [-1, 1], where x corresponds to the sample index
+   * or sample number. With scaling and shifts applied, the equation becomes:
+   *    y = abs(slope * (x - x_offset)) + y_offset
+   *
+   * Finding the slope
+   *    slope = rise / run
+   *    slope = amplitude / (sps / 2)
+   *    slope = 2 * amplitude / sps, where sps = number of samples per wave period
+   *
+   * The amplitude ranges from -volume to +volume; therefore:
+   *    amplitude = 2 * volume
+   *    slope = 4 * volume / sps
+   *
+   * x_offset should shift the wave a half period to the right; therefore:
+   *    x_offset = sps / 2
+   *
+   * y_offset should center the wave around 0; therefore:
+   *    y_offset = -amplitude / 2
+   *    y_offset = -volume
+   *
+   * Putting it together:
+   *    y = abs((4 * volume / sps) * (x - sps / 2)) - volume
+   *    y = abs((4 * volume * x / sps) - (4 * volume * sps) * (sps / 2)) - volume
+   *    y = abs((4 * volume * x / sps) - (2 * volume)) - volume
+   */
   for (int i = 0; i < len; i++)
   {
-    audio_buffer[i] = (sample_num / ((audio_handle.sample_freq_hz / audio_handle.tone_freq_hz) / 2)) & 0x1 ? -1 : 1;
-    audio_buffer[i] *= DEFAULT_VOLUME;
+    output = 4 * DEFAULT_VOLUME * sample_num / samples_per_period;
+    output = abs(output - (2 * DEFAULT_VOLUME)) - DEFAULT_VOLUME;
+    audio_buffer[i] = (int8_t)output;
     sample_num++;
+    sample_num %= samples_per_period;
   }
 }
 
