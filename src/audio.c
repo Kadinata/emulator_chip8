@@ -5,7 +5,12 @@
 #include "logging.h"
 #include "status_code.h"
 
-typedef struct audio_handle_s {
+/**
+ * Data structure definition to keep track
+ * of the audio module's internal state
+ */
+typedef struct audio_handle_s
+{
   SDL_AudioDeviceID audio_device;
   uint32_t sample_freq_hz;
   uint32_t tone_freq_hz;
@@ -13,13 +18,22 @@ typedef struct audio_handle_s {
 
 static audio_handle_t audio_handle;
 
-static void audio_callback(void  __attribute__((unused)) *userdata, uint8_t * audio_buffer, int len)
+/**
+ * Handler function to populate SDL's audio output buffer with audio samples. In this case,
+ * the buffer will be populated with square wave samples.
+ * @param userdata - Pointer to custom user data (unused)
+ * @param audio_buffer - Audio output buffer provided by SDL
+ * @param len - Number of samples requested by SDL
+ * @return - None
+ */
+static void audio_callback(void __attribute__((unused)) * userdata, uint8_t *audio_buffer, int len)
 {
   static uint32_t sample_num = 0;
 
-  for (int i = 0 ; i < len; i++)
+  for (int i = 0; i < len; i++)
   {
-    audio_buffer[i] = (sample_num / ((audio_handle.sample_freq_hz / audio_handle.tone_freq_hz) / 2)) & 0x1 ? -DEFAULT_VOLUME : DEFAULT_VOLUME;
+    audio_buffer[i] = (sample_num / ((audio_handle.sample_freq_hz / audio_handle.tone_freq_hz) / 2)) & 0x1 ? -1 : 1;
+    audio_buffer[i] *= DEFAULT_VOLUME;
     sample_num++;
   }
 }
@@ -34,18 +48,19 @@ status_code_t audio_init(audio_init_param_t *const param)
   }
 
   int16_t init_result;
-  if ((init_result = SDL_InitSubSystem(SDL_INIT_AUDIO)) != 0) {
+  if ((init_result = SDL_InitSubSystem(SDL_INIT_AUDIO)) != 0)
+  {
     Log_E("Failed to inittialize SDL Audio Subsystem (%d)", init_result);
     return STATUS_ERR_GENERIC;
   }
 
   SDL_AudioSpec desired_spec = (SDL_AudioSpec){
-    .freq = param->sample_freq_hz,
-    .format = AUDIO_S8,
-    .channels = 1,
-    .samples = 512,
-    .callback = audio_callback,
-    .userdata = NULL,
+      .freq = param->sample_freq_hz,
+      .format = AUDIO_S8,
+      .channels = 1,
+      .samples = 512,
+      .callback = audio_callback,
+      .userdata = NULL,
   };
 
   SDL_AudioSpec obtained_spec;
