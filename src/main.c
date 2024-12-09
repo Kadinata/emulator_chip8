@@ -19,6 +19,23 @@ void print_usage(void)
   printf("\nUsage: chip8_emu.out <ROM file>\n");
 }
 
+status_code_t cleanup()
+{
+  status_code_t status = audio_cleanup();
+  if (status != STATUS_OK)
+  {
+    Log_E("An error occurred while cleaning up audio: %u", status);
+  }
+
+  status = display_cleanup();
+  if (status != STATUS_OK)
+  {
+    Log_E("An error occurred while cleaning up display: %u", status);
+  }
+
+  return status;
+}
+
 int main(int argc, char **argv)
 {
 
@@ -69,7 +86,7 @@ int main(int argc, char **argv)
   if (status != STATUS_OK)
   {
     Log_E("An error occurred while initializing the 60 Hz display timer: %u", status);
-    return display_cleanup();
+    return cleanup();
   }
   Log_I("60 Hz display timer successfully.");
 
@@ -78,7 +95,7 @@ int main(int argc, char **argv)
   if (status != STATUS_OK)
   {
     Log_E("An error occurred while initializing display: %u", status);
-    return display_cleanup();
+    return cleanup();
   }
   Log_I("Display initialized successfully.");
 
@@ -87,7 +104,7 @@ int main(int argc, char **argv)
   if (status != STATUS_OK)
   {
     Log_E("An error occurred while initializing audio: %u", status);
-    return display_cleanup();
+    return cleanup();
   }
   Log_I("Audio initialized successfully.");
 
@@ -130,16 +147,11 @@ int main(int argc, char **argv)
     }
   }
 
-  status = audio_cleanup();
+  status = cleanup();
   if (status != STATUS_OK)
   {
-    Log_E("An error occurred while cleaning up audio: %u", status);
+    Log_E("An error occurred while performing cleanup: %u", status);
   }
 
-  status = display_cleanup();
-  if (status != STATUS_OK)
-  {
-    Log_E("An error occurred while cleaning up display: %u", status);
-  }
   return status;
 }
