@@ -700,7 +700,7 @@ status_code_t op_DXYN(uint16_t const opcode, cpu_state_t *const state)
   uint8_t x = DECODE_X(opcode);
   uint8_t y = DECODE_Y(opcode);
   uint8_t h = DECODE_N(opcode);
-  uint8_t pixel = 0;
+  uint8_t sprite_pixel = 0;
 
   uint16_t x_orig = reg->V[x] % GRAPHICS_WIDTH;
   uint16_t y_orig = reg->V[y] % GRAPHICS_HEIGHT;
@@ -708,12 +708,12 @@ status_code_t op_DXYN(uint16_t const opcode, cpu_state_t *const state)
   reg->V[0xF] = 0;
   for (uint16_t row = 0; row < h; row++)
   {
-    status_code_t status = mem_read(state, reg->I + row, &pixel, 1);
+    status_code_t status = mem_read(state, reg->I + row, &sprite_pixel, 1);
     RETURN_STATUS_IF_NOT_OK(status);
 
     for (uint16_t col = 0; col < 8; col++)
     {
-      if (pixel & (0x80 >> col))
+      if (sprite_pixel & (0x80 >> col))
       {
         uint16_t y_pos = y_orig + row;
         uint16_t x_pos = x_orig + col;

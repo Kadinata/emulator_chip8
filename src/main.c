@@ -36,6 +36,10 @@ int main(int argc, char **argv)
       .sample_freq_hz = DEFAULT_SAMPLE_FREQ_HZ,
       .tone_freq_hz = DEFAULT_TONE_FREQ_HZ,
   };
+  display_init_param_t display_init_param = (display_init_param_t){
+      .background_color = DEFAULT_BG_COLOR,
+      .foreground_color = DEFAULT_FG_COLOR,
+  };
 
   if (argc != 2)
   {
@@ -71,7 +75,7 @@ int main(int argc, char **argv)
     Log_E("An error occurred while initializing system timer: %u", status);
     return status;
   }
-  Log_I("System timer successfully.");
+  Log_I("System timer initialized successfully.");
 
   // Initialize display and audio timer
   Log_I("Initializing 60 Hz display timer...");
@@ -81,10 +85,10 @@ int main(int argc, char **argv)
     Log_E("An error occurred while initializing the 60 Hz display timer: %u", status);
     return status;
   }
-  Log_I("60 Hz display timer successfully.");
+  Log_I("60 Hz display timer initialized successfully.");
 
   // Initialize the display module
-  status = display_init(WINDOW_TITLE);
+  status = display_init(WINDOW_TITLE, &display_init_param);
   if (status != STATUS_OK)
   {
     cleanup();
