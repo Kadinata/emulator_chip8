@@ -45,7 +45,7 @@ static void audio_callback(void __attribute__((unused)) * userdata, uint8_t *aud
    * Finding the slope
    *    slope = rise / run
    *    slope = amplitude / (spp / 2)
-   *    slope = 2 * amplitude / spp, where spp = number of samples per wave period
+   *    slope = 2 * volume / spp, where spp = number of samples per wave period
    *
    * The amplitude ranges from -volume to +volume; therefore:
    *    amplitude = 2 * volume

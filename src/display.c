@@ -37,8 +37,8 @@ status_code_t display_init(const char *title, display_init_param_t *const param)
       title,
       SDL_WINDOWPOS_CENTERED,
       SDL_WINDOWPOS_CENTERED,
-      GRAPHICS_WIDTH * 8,
-      GRAPHICS_HEIGHT * 8,
+      (GRAPHICS_WIDTH * PIXEL_WIDTH),
+      (GRAPHICS_HEIGHT * PIXEL_WIDTH),
       0);
 
   display_handle.renderer = SDL_CreateRenderer(display_handle.window, -1, SDL_RENDERER_ACCELERATED);
