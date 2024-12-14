@@ -554,8 +554,8 @@ status_code_t op_8XY4(uint16_t const opcode, cpu_state_t *const state)
   sum  = reg->V[x];
   sum += reg->V[y];
 
-  reg->V[0xF] = (sum & 0xFF00) ? 1 : 0;
   reg->V[x] = (sum & 0x00FF);
+  reg->V[0xF] = (sum & 0xFF00) ? 1 : 0;
 
   return STATUS_OK;
 }
@@ -571,9 +571,10 @@ status_code_t op_8XY5(uint16_t const opcode, cpu_state_t *const state)
 
   uint8_t x = DECODE_X(opcode);
   uint8_t y = DECODE_Y(opcode);
+  uint8_t carry = (reg->V[x] >= reg->V[y]) ? 1 : 0;
 
-  reg->V[0xF] = (reg->V[x] > reg->V[y]) ? 1 : 0;
   reg->V[x] -= reg->V[y];
+  reg->V[0xF] = carry;
 
   return STATUS_OK;
 }
@@ -587,9 +588,10 @@ status_code_t op_8X06(uint16_t const opcode, cpu_state_t *const state)
   registers_t *reg = &state->registers;
 
   uint8_t x = DECODE_X(opcode);
+  uint8_t carry = reg->V[x] & 0x1;
 
-  reg->V[0xF] = (reg->V[x] & 0x1);
   reg->V[x] >>= 1;
+  reg->V[0xF] = carry;
 
   return STATUS_OK;
 }
@@ -605,9 +607,10 @@ status_code_t op_8XY7(uint16_t const opcode, cpu_state_t *const state)
 
   uint8_t x = DECODE_X(opcode);
   uint8_t y = DECODE_Y(opcode);
+  uint8_t carry = (reg->V[y] >= reg->V[x]) ? 1 : 0;
 
-  reg->V[0xF] = (reg->V[y] > reg->V[x]) ? 1 : 0;
   reg->V[x] = reg->V[y] - reg->V[x];
+  reg->V[0xF] = carry;
 
   return STATUS_OK;
 }
@@ -621,9 +624,10 @@ status_code_t op_8X0E(uint16_t const opcode, cpu_state_t *const state)
   registers_t *reg = &state->registers;
 
   uint8_t x = DECODE_X(opcode);
+  uint8_t carry = (reg->V[x] & 0x80) >> 7;
 
-  reg->V[0xF] = (reg->V[x] & 0x80) >> 7;
   reg->V[x] <<= 1;
+  reg->V[0xF] = carry;
 
   return STATUS_OK;
 }
