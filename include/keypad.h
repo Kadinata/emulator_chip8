@@ -2,14 +2,14 @@
 #define __KEYPAD_H__
 
 #include <stdint.h>
+#include "cpu_def.h"
 #include "status_code.h"
 
 /**
- * Read the keypad state and store the results in the provided buffer.
- * @param key_buf - Pointer to the buffer to store keypad readings. Value
- *                  is set to 1 if the key is pressed, 0 otherwise.
+ * Read the keypad state and store the results in the provided keypad state object.
+ * @param keypad - Pointer to keypad state object to store keypad reading values.
  * @return STATUS_OK if successful, otherwise appropriate error code.
  */
-status_code_t keypad_read(uint8_t * const key_buf);
+status_code_t keypad_read(keypad_state_t *const keypad);
 
 #endif /* __KEYPAD_H__ */

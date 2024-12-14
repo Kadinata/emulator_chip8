@@ -551,7 +551,7 @@ status_code_t op_8XY4(uint16_t const opcode, cpu_state_t *const state)
   uint8_t y = DECODE_Y(opcode);
   uint16_t sum = 0;
 
-  sum  = reg->V[x];
+  sum = reg->V[x];
   sum += reg->V[y];
 
   reg->V[x] = (sum & 0x00FF);
@@ -749,8 +749,10 @@ status_code_t op_EX9E(uint16_t const opcode, cpu_state_t *const state)
   uint8_t x = DECODE_X(opcode);
 
   registers_t *reg = &state->registers;
+  keypad_state_t *keypad = &state->peripherals.keypad;
+  uint8_t index = 1 << (reg->V[x] & 0xF);
 
-  if (state->peripherals.keypad[(reg->V[x] & 0xF)])
+  if (keypad->current & index)
   {
     reg->pc += 2;
   }
@@ -767,8 +769,10 @@ status_code_t op_EXA1(uint16_t const opcode, cpu_state_t *const state)
   uint8_t x = DECODE_X(opcode);
 
   registers_t *reg = &state->registers;
+  keypad_state_t *keypad = &state->peripherals.keypad;
+  uint8_t index = 1 << (reg->V[x] & 0xF);
 
-  if (!state->peripherals.keypad[(reg->V[x] & 0xF)])
+  if ((keypad->current & index) == 0)
   {
     reg->pc += 2;
   }
@@ -804,7 +808,7 @@ status_code_t op_FX0A(uint16_t const opcode, cpu_state_t *const state)
 
   for (uint8_t i = 0; i < NUM_KEYS; i++)
   {
-    if (state->peripherals.keypad[i])
+    if (state->peripherals.keypad.current & (1 << i))
     {
       key_pressed = 1;
       reg->V[x] = i;

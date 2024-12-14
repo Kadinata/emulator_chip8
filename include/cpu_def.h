@@ -51,11 +51,25 @@ typedef struct graphics_s
   uint8_t display_update;
 } graphics_t;
 
+/**
+ * Data structure to keep track of key presses using 16-bit integer.
+ * Each bit corresponds to key 0 to key F respectively. The n-th
+ * bit being 1 indicates the n-th key being pressed.
+ */
+typedef struct keypad_state_s
+{
+  /** Current keypad state */
+  uint16_t current;
+
+  /** The state of the keypad in the previous frame */
+  uint16_t previous;
+} keypad_state_t;
+
 /** Definitions of CPU I/O / peripherals */
 typedef struct peripherals_s
 {
-  /** 16 x 8-bit input keypad */
-  uint8_t keypad[NUM_KEYS];
+  /** 16 input keypad */
+  keypad_state_t keypad;
 
   /** 64x32 px output monochrome display */
   graphics_t graphics;
@@ -70,4 +84,4 @@ typedef struct cpu_state_s
   peripherals_t peripherals;
 } cpu_state_t;
 
-#endif
+#endif /* __CHIP_8_CPU_DEF_H__ */

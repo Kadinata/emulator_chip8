@@ -726,7 +726,7 @@ void test_op_EX9E_pressed(void)
   stub_init_cpu_state(&cpu_state);
   stub_set_opcode(&cpu_state, 0xE09E, 0);
   cpu_state.registers.V[0] = 0;
-  cpu_state.peripherals.keypad[0] = 1;
+  cpu_state.peripherals.keypad.current = 1;
 
   TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
   TEST_ASSERT_EQUAL_HEX16(START_ADDRESS + 4, cpu_state.registers.pc);
@@ -742,7 +742,7 @@ void test_op_EX9E_not_pressed(void)
   stub_init_cpu_state(&cpu_state);
   stub_set_opcode(&cpu_state, 0xE09E, 0);
   cpu_state.registers.V[0] = 0;
-  cpu_state.peripherals.keypad[0] = 0;
+  cpu_state.peripherals.keypad.current = 0;
 
   TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
   TEST_ASSERT_EQUAL_HEX16(START_ADDRESS + 2, cpu_state.registers.pc);
@@ -758,7 +758,7 @@ void test_op_EXA1_pressed(void)
   stub_init_cpu_state(&cpu_state);
   stub_set_opcode(&cpu_state, 0xE0A1, 0);
   cpu_state.registers.V[0] = 0;
-  cpu_state.peripherals.keypad[0] = 1;
+  cpu_state.peripherals.keypad.current = 1;
 
   TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
   TEST_ASSERT_EQUAL_HEX16(START_ADDRESS + 2, cpu_state.registers.pc);
@@ -774,7 +774,7 @@ void test_op_EXA1_not_pressed(void)
   stub_init_cpu_state(&cpu_state);
   stub_set_opcode(&cpu_state, 0xE0A1, 0);
   cpu_state.registers.V[0] = 0;
-  cpu_state.peripherals.keypad[0] = 0;
+  cpu_state.peripherals.keypad.current = 0;
 
   TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
   TEST_ASSERT_EQUAL_HEX16(START_ADDRESS + 4, cpu_state.registers.pc);
@@ -804,7 +804,7 @@ void test_op_FX0A_key_pressed(void)
   cpu_state_t cpu_state = {0};
   stub_init_cpu_state(&cpu_state);
   stub_set_opcode(&cpu_state, 0xF00A, 0);
-  cpu_state.peripherals.keypad[5] = 1;
+  cpu_state.peripherals.keypad.current = 1 << 5;
 
   TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
   TEST_ASSERT_EQUAL_HEX8(5, cpu_state.registers.V[0]);
