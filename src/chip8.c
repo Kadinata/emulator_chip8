@@ -746,7 +746,7 @@ status_code_t op_EX9E(uint16_t const opcode, cpu_state_t *const state)
 
   registers_t *reg = &state->registers;
 
-  if (state->peripherals.keypad[reg->V[x]])
+  if (state->peripherals.keypad[(reg->V[x] & 0xF)])
   {
     reg->pc += 2;
   }
@@ -764,7 +764,7 @@ status_code_t op_EXA1(uint16_t const opcode, cpu_state_t *const state)
 
   registers_t *reg = &state->registers;
 
-  if (!state->peripherals.keypad[reg->V[x]])
+  if (!state->peripherals.keypad[(reg->V[x] & 0xF)])
   {
     reg->pc += 2;
   }
