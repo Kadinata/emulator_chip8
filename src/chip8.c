@@ -15,6 +15,9 @@
 #define DECODE_NN(opcode) (opcode & 0xFF)
 #define DECODE_NNN(opcode) (opcode & 0xFFF)
 
+#define KEY_MASK(index) (1 << (index & 0xF))
+#define KEY_PRESSED(key_state_ptr, index) (((key_state_ptr)->current & KEY_MASK(index)) ? 1 : 0)
+
 status_code_t fetch(cpu_state_t *const state, uint16_t *const opcode);
 status_code_t mem_read(cpu_state_t *const state, const uint16_t address, uint8_t *const dest, const size_t size);
 status_code_t mem_write(cpu_state_t *const state, const uint16_t address, uint8_t *const source, const size_t size);
@@ -749,10 +752,9 @@ status_code_t op_EX9E(uint16_t const opcode, cpu_state_t *const state)
   uint8_t x = DECODE_X(opcode);
 
   registers_t *reg = &state->registers;
-  keypad_state_t *keypad = &state->peripherals.keypad;
-  uint8_t index = 1 << (reg->V[x] & 0xF);
+  keypad_state_t *key_state = &state->peripherals.keypad;
 
-  if (keypad->current & index)
+  if (KEY_PRESSED(key_state, reg->V[x]))
   {
     reg->pc += 2;
   }
@@ -769,10 +771,9 @@ status_code_t op_EXA1(uint16_t const opcode, cpu_state_t *const state)
   uint8_t x = DECODE_X(opcode);
 
   registers_t *reg = &state->registers;
-  keypad_state_t *keypad = &state->peripherals.keypad;
-  uint8_t index = 1 << (reg->V[x] & 0xF);
+  keypad_state_t *key_state = &state->peripherals.keypad;
 
-  if ((keypad->current & index) == 0)
+  if (!KEY_PRESSED(key_state, reg->V[x]))
   {
     reg->pc += 2;
   }
@@ -802,13 +803,14 @@ status_code_t op_FX07(uint16_t const opcode, cpu_state_t *const state)
 status_code_t op_FX0A(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
+  keypad_state_t *key_state = &state->peripherals.keypad;
 
   uint8_t key_pressed = 0;
   uint8_t x = DECODE_X(opcode);
 
   for (uint8_t i = 0; i < NUM_KEYS; i++)
   {
-    if (state->peripherals.keypad.current & (1 << i))
+    if (key_state->current & (1 << i))
     {
       key_pressed = 1;
       reg->V[x] = i;
