@@ -127,12 +127,12 @@ int main(int argc, char **argv)
         Log_F("Emulation cycle encountered an error: %u", status);
         main_loop = 0;
       }
+    }
 
-      if (timer_check(&display_timer))
-      {
-        ((cpu_state.timers.sound > 0) ? audio_play_beep() : audio_mute());
-        update_timers(&cpu_state);
-      }
+    if (timer_check(&display_timer))
+    {
+      ((cpu_state.timers.sound > 0) ? audio_play_beep() : audio_mute());
+      update_timers(&cpu_state);
 
       status = display_render(&cpu_state.peripherals.graphics);
       if (status != STATUS_OK)
