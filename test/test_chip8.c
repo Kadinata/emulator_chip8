@@ -81,6 +81,18 @@ void test_emulation_cycle_fetch_with_out_of_bound_address(void)
   TEST_ASSERT_EQUAL_INT(STATUS_ERR_MEM_OUT_OF_BOUNDS, emulation_cycle(&cpu_state));
 }
 
+void test_emulation_cycle_update_previous_keypad_state(void)
+{
+  cpu_state_t cpu_state = {0};
+  stub_init_cpu_state(&cpu_state);
+  stub_set_opcode(&cpu_state, 0x2000 | START_ADDRESS, 0);
+  cpu_state.peripherals.keypad.previous = 0;
+  cpu_state.peripherals.keypad.current = 0x1234;
+
+  TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
+  TEST_ASSERT_EQUAL_HEX16(0x1234, cpu_state.peripherals.keypad.previous);
+}
+
 void test_update_timers(void)
 {
   cpu_state_t cpu_state = {0};
@@ -799,12 +811,13 @@ void test_op_FX07(void)
  * Test 0xFX0A: KEY Vx
  * Wait for key press and stores the value in V[X]
  */
-void test_op_FX0A_key_pressed(void)
+void test_op_FX0A_key_released(void)
 {
   cpu_state_t cpu_state = {0};
   stub_init_cpu_state(&cpu_state);
   stub_set_opcode(&cpu_state, 0xF00A, 0);
-  cpu_state.peripherals.keypad.current = 1 << 5;
+  cpu_state.peripherals.keypad.previous = 1 << 5;
+  cpu_state.peripherals.keypad.current = 0;
 
   TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
   TEST_ASSERT_EQUAL_HEX8(5, cpu_state.registers.V[0]);
@@ -820,6 +833,22 @@ void test_op_FX0A_key_not_pressed(void)
   cpu_state_t cpu_state = {0};
   stub_init_cpu_state(&cpu_state);
   stub_set_opcode(&cpu_state, 0xF00A, 0);
+
+  TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
+  TEST_ASSERT_EQUAL_HEX16(START_ADDRESS, cpu_state.registers.pc);
+}
+
+/**
+ * Test 0xFX0A: KEY Vx
+ * Wait for key press and stores the value in V[X]
+ */
+void test_op_FX0A_key_pressed(void)
+{
+  cpu_state_t cpu_state = {0};
+  stub_init_cpu_state(&cpu_state);
+  stub_set_opcode(&cpu_state, 0xF00A, 0);
+  cpu_state.peripherals.keypad.previous = 0;
+  cpu_state.peripherals.keypad.current = 1 << 5;
 
   TEST_ASSERT_EQUAL_INT(STATUS_OK, emulation_cycle(&cpu_state));
   TEST_ASSERT_EQUAL_HEX16(START_ADDRESS, cpu_state.registers.pc);
