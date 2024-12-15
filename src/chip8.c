@@ -147,6 +147,7 @@ status_code_t emulation_cycle(cpu_state_t *const state)
   status = op_table[((opcode >> 12) & 0xF)](opcode, state);
   RETURN_STATUS_IF_NOT_OK(status);
 
+  state->peripherals.keypad.previous = state->peripherals.keypad.current;
   return STATUS_OK;
 }
 
@@ -798,26 +799,27 @@ status_code_t op_FX07(uint16_t const opcode, cpu_state_t *const state)
 
 /**
  * 0xFX0A: KEY Vx
- * Wait for key press and stores the value in V[X]
+ * Wait for key release and stores the value in V[X]
  */
 status_code_t op_FX0A(uint16_t const opcode, cpu_state_t *const state)
 {
   registers_t *reg = &state->registers;
   keypad_state_t *key_state = &state->peripherals.keypad;
 
-  uint8_t key_pressed = 0;
   uint8_t x = DECODE_X(opcode);
+  uint16_t key_released = key_state->previous & ~key_state->current;
 
-  for (uint8_t i = 0; i < NUM_KEYS; i++)
+  if (key_released)
   {
-    if (key_state->current & (1 << i))
+    for (uint8_t i = 0; i < NUM_KEYS; i++)
     {
-      key_pressed = 1;
-      reg->V[x] = i;
+      if (key_released & (1 << i))
+      {
+        reg->V[x] = i;
+      }
     }
   }
-
-  if (!key_pressed)
+  else
   {
     reg->pc -= 2;
   }

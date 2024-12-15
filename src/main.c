@@ -107,7 +107,7 @@ int main(int argc, char **argv)
   while (main_loop)
   {
 
-    status = keypad_read(&cpu_state.peripherals.keypad);
+    status = keypad_read(&cpu_state.peripherals.keypad.current);
     if (status == STATUS_REQ_EXIT)
     {
       Log_I("Exiting...");
